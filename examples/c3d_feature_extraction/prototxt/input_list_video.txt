@@ -1,0 +1,16 @@
+input/avi/v_ApplyEyeMakeup_g01_c01.avi 1 0
+input/avi/v_ApplyEyeMakeup_g01_c01.avi 17 0
+input/avi/v_ApplyEyeMakeup_g01_c01.avi 33 0
+input/avi/v_ApplyEyeMakeup_g01_c01.avi 49 0
+input/avi/v_ApplyEyeMakeup_g01_c01.avi 65 0
+input/avi/v_ApplyEyeMakeup_g01_c01.avi 81 0
+input/avi/v_ApplyEyeMakeup_g01_c01.avi 97 0
+input/avi/v_ApplyEyeMakeup_g01_c01.avi 113 0
+input/avi/v_ApplyEyeMakeup_g01_c01.avi 129 0
+input/avi/v_ApplyEyeMakeup_g01_c01.avi 145 0
+input/avi/v_BaseballPitch_g01_c01.avi 1 0
+input/avi/v_BaseballPitch_g01_c01.avi 17 0
+input/avi/v_BaseballPitch_g01_c01.avi 33 0
+input/avi/v_BaseballPitch_g01_c01.avi 49 0
+input/avi/v_BaseballPitch_g01_c01.avi 65 0
+input/avi/v_BaseballPitch_g01_c01.avi 81 0

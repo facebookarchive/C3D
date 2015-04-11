@@ -1,0 +1,16 @@
+input/frm/v_ApplyEyeMakeup_g01_c01/ 1 0
+input/frm/v_ApplyEyeMakeup_g01_c01/ 17 0
+input/frm/v_ApplyEyeMakeup_g01_c01/ 33 0
+input/frm/v_ApplyEyeMakeup_g01_c01/ 49 0
+input/frm/v_ApplyEyeMakeup_g01_c01/ 65 0
+input/frm/v_ApplyEyeMakeup_g01_c01/ 81 0
+input/frm/v_ApplyEyeMakeup_g01_c01/ 97 0
+input/frm/v_ApplyEyeMakeup_g01_c01/ 113 0
+input/frm/v_ApplyEyeMakeup_g01_c01/ 129 0
+input/frm/v_ApplyEyeMakeup_g01_c01/ 145 0
+input/frm/v_BaseballPitch_g01_c01/ 1 0
+input/frm/v_BaseballPitch_g01_c01/ 17 0
+input/frm/v_BaseballPitch_g01_c01/ 33 0
+input/frm/v_BaseballPitch_g01_c01/ 49 0
+input/frm/v_BaseballPitch_g01_c01/ 65 0
+input/frm/v_BaseballPitch_g01_c01/ 81 0

@@ -1,0 +1,449 @@
+name: "DeepConv3DNet_Sport1M_Val"
+layers {
+  name: "data"
+  type: VIDEO_DATA
+  top: "data"
+  top: "label"
+  image_data_param {
+    source: "prototxt/input_list_video.txt"
+    use_image: false
+    mean_file: "sport1m_train16_128_mean.binaryproto"
+    batch_size: 50
+    crop_size: 112
+    mirror: false
+    show_data: 0
+    new_height: 128
+    new_width: 171
+    new_length: 16
+    shuffle: false
+  }
+}
+# ----------- 1st layer group ---------------
+layers {
+  name: "conv1a"
+  type: CONVOLUTION3D
+  bottom: "data"
+  top: "conv1a"
+  blobs_lr: 1
+  blobs_lr: 2
+  weight_decay: 1
+  weight_decay: 0
+  convolution_param {
+    num_output: 64
+    kernel_size: 3
+    kernel_depth: 3
+    pad: 1
+    temporal_pad: 1
+    weight_filler {
+      type: "gaussian"
+      std: 0.01
+    }
+    bias_filler {
+      type: "constant"
+      value: 0
+    }
+  }
+}
+layers {
+  name: "relu1a"
+  type: RELU
+  bottom: "conv1a"
+  top: "conv1a"
+}
+layers {
+  name: "pool1"
+  type: POOLING3D
+  bottom: "conv1a"
+  top: "pool1"
+  pooling_param {
+    pool: MAX
+    kernel_size: 2
+    kernel_depth: 1
+    stride: 2
+    temporal_stride: 1
+  }
+}
+# ------------- 2nd layer group --------------
+layers {
+  name: "conv2a"
+  type: CONVOLUTION3D
+  bottom: "pool1"
+  top: "conv2a"
+  blobs_lr: 1
+  blobs_lr: 2
+  weight_decay: 1
+  weight_decay: 0
+  convolution_param {
+    num_output: 128
+    kernel_size: 3
+    kernel_depth: 3
+    pad: 1
+    temporal_pad: 1
+    weight_filler {
+      type: "gaussian"
+      std: 0.01
+    }
+    bias_filler {
+      type: "constant"
+      value: 1
+    }
+  }
+}
+layers {
+  name: "relu2a"
+  type: RELU
+  bottom: "conv2a"
+  top: "conv2a"
+}
+layers {
+  name: "pool2"
+  type: POOLING3D
+  bottom: "conv2a"
+  top: "pool2"
+  pooling_param {
+    pool: MAX
+    kernel_size: 2
+    kernel_depth: 2
+    stride: 2
+    temporal_stride: 2
+  }
+}
+# ----------------- 3rd layer group --------------
+layers {
+  name: "conv3a"
+  type: CONVOLUTION3D
+  bottom: "pool2"
+  top: "conv3a"
+  blobs_lr: 1
+  blobs_lr: 2
+  weight_decay: 1
+  weight_decay: 0
+  convolution_param {
+    num_output: 256
+    kernel_size: 3
+    kernel_depth: 3
+    pad: 1
+    temporal_pad: 1
+    weight_filler {
+      type: "gaussian"
+      std: 0.01
+    }
+    bias_filler {
+      type: "constant"
+      value: 1
+    }
+  }
+}
+layers {
+  name: "relu3a"
+  type: RELU
+  bottom: "conv3a"
+  top: "conv3a"
+}
+layers {
+  name: "conv3b"
+  type: CONVOLUTION3D
+  bottom: "conv3a"
+  top: "conv3b"
+  blobs_lr: 1
+  blobs_lr: 2
+  weight_decay: 1
+  weight_decay: 0
+  convolution_param {
+    num_output: 256
+    kernel_size: 3
+    kernel_depth: 3
+    pad: 1
+    temporal_pad: 1
+    weight_filler {
+      type: "gaussian"
+      std: 0.01
+    }
+    bias_filler {
+      type: "constant"
+      value: 1
+    }
+  }
+}
+layers {
+  name: "relu3b"
+  type: RELU
+  bottom: "conv3b"
+  top: "conv3b"
+}
+layers {
+  name: "pool3"
+  type: POOLING3D
+  bottom: "conv3b"
+  top: "pool3"
+  pooling_param {
+    pool: MAX
+    kernel_size: 2
+    kernel_depth: 2
+    stride: 2
+    temporal_stride: 2
+  }
+}
+
+# --------- 4th layer group
+layers {
+  name: "conv4a"
+  type: CONVOLUTION3D
+  bottom: "pool3"
+  top: "conv4a"
+  blobs_lr: 1
+  blobs_lr: 2
+  weight_decay: 1
+  weight_decay: 0
+  convolution_param {
+    num_output: 512
+    kernel_size: 3
+    kernel_depth: 3
+    pad: 1
+    temporal_pad: 1
+    weight_filler {
+      type: "gaussian"
+      std: 0.01
+    }
+    bias_filler {
+      type: "constant"
+      value: 1
+    }
+  }
+}
+layers {
+  name: "relu4a"
+  type: RELU
+  bottom: "conv4a"
+  top: "conv4a"
+}
+layers {
+  name: "conv4b"
+  type: CONVOLUTION3D
+  bottom: "conv4a"
+  top: "conv4b"
+  blobs_lr: 1
+  blobs_lr: 2
+  weight_decay: 1
+  weight_decay: 0
+  convolution_param {
+    num_output: 512
+    kernel_size: 3
+    kernel_depth: 3
+    pad: 1
+    temporal_pad: 1
+    weight_filler {
+      type: "gaussian"
+      std: 0.01
+    }
+    bias_filler {
+      type: "constant"
+      value: 1
+    }
+  }
+}
+layers {
+  name: "relu4b"
+  type: RELU
+  bottom: "conv4b"
+  top: "conv4b"
+}
+layers {
+  name: "pool4"
+  type: POOLING3D
+  bottom: "conv4b"
+  top: "pool4"
+  pooling_param {
+    pool: MAX
+    kernel_size: 2
+    kernel_depth: 2
+    stride: 2
+    temporal_stride: 2
+  }
+}
+
+# --------------- 5th layer group --------
+layers {
+  name: "conv5a"
+  type: CONVOLUTION3D
+  bottom: "pool4"
+  top: "conv5a"
+  blobs_lr: 1
+  blobs_lr: 2
+  weight_decay: 1
+  weight_decay: 0
+  convolution_param {
+    num_output: 512
+    kernel_size: 3
+    kernel_depth: 3
+    pad: 1
+    temporal_pad: 1
+    weight_filler {
+      type: "gaussian"
+      std: 0.01
+    }
+    bias_filler {
+      type: "constant"
+      value: 1
+    }
+  }
+}
+layers {
+  name: "relu5a"
+  type: RELU
+  bottom: "conv5a"
+  top: "conv5a"
+}
+layers {
+  name: "conv5b"
+  type: CONVOLUTION3D
+  bottom: "conv5a"
+  top: "conv5b"
+  blobs_lr: 1
+  blobs_lr: 2
+  weight_decay: 1
+  weight_decay: 0
+  convolution_param {
+    num_output: 512
+    kernel_size: 3
+    kernel_depth: 3
+    pad: 1
+    temporal_pad: 1
+    weight_filler {
+      type: "gaussian"
+      std: 0.01
+    }
+    bias_filler {
+      type: "constant"
+      value: 1
+    }
+  }
+}
+layers {
+  name: "relu5b"
+  type: RELU
+  bottom: "conv5b"
+  top: "conv5b"
+}
+
+layers {
+  name: "pool5"
+  type: POOLING3D
+  bottom: "conv5b"
+  top: "pool5"
+  pooling_param {
+    pool: MAX
+    kernel_size: 2
+    kernel_depth: 2
+    stride: 2
+    temporal_stride: 2
+  }
+}
+# ---------------- fc layers -------------
+layers {
+  name: "fc6-1"
+  type: INNER_PRODUCT
+  bottom: "pool5"
+  top: "fc6-1"
+  blobs_lr: 1
+  blobs_lr: 2
+  weight_decay: 1
+  weight_decay: 0
+  inner_product_param {
+    num_output: 4096
+    weight_filler {
+      type: "gaussian"
+      std: 0.005
+    }
+    bias_filler {
+      type: "constant"
+      value: 1
+    }
+  }
+}
+layers {
+  name: "relu6"
+  type: RELU
+  bottom: "fc6-1"
+  top: "fc6-1"
+}
+layers {
+  name: "drop6"
+  type: DROPOUT
+  bottom: "fc6-1"
+  top: "fc6-1"
+  dropout_param {
+    dropout_ratio: 0.5
+  }
+}
+layers {
+  name: "fc7-1"
+  type: INNER_PRODUCT
+  bottom: "fc6-1"
+  top: "fc7-1"
+  blobs_lr: 1
+  blobs_lr: 2
+  weight_decay: 1
+  weight_decay: 0
+  inner_product_param {
+    num_output: 4096
+    weight_filler {
+    type: "gaussian"
+      std: 0.005
+    }
+    bias_filler {
+      type: "constant"
+      value: 1
+    }
+  }
+}
+layers {
+  name: "relu7"
+  type: RELU
+  bottom: "fc7-1"
+  top: "fc7-1"
+}
+layers {
+  name: "drop7"
+  type: DROPOUT
+  bottom: "fc7-1"
+  top: "fc7-1"
+  dropout_param {
+    dropout_ratio: 0.5
+  }
+}
+layers {
+  name: "fc8-1"
+  type: INNER_PRODUCT
+  bottom: "fc7-1"
+  top: "fc8-1"
+  blobs_lr: 1
+  blobs_lr: 2
+  weight_decay: 1
+  weight_decay: 0
+  inner_product_param {
+    num_output: 487
+    weight_filler {
+      type: "gaussian"
+      std: 0.01
+    }
+    bias_filler {
+      type: "constant"
+      value: 0
+    }
+  }
+}
+layers {
+  name: "prob"
+  type: SOFTMAX
+  bottom: "fc8-1"
+  top: "prob"
+}
+layers {
+  name: "accuracy"
+  type: ACCURACY
+  bottom: "prob"
+  bottom: "label"
+  top: "accuracy"
+  #top: "prediction_truth"
+}
