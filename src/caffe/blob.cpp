@@ -34,6 +34,12 @@ void Blob<Dtype>::Reshape(const int num, const int channels, const int length, c
 }
 
 template <typename Dtype>
+void Blob<Dtype>::Reshape(const int num, const int channels, const int height,
+    const int width) {
+	Reshape(num, channels, 1, height, width);
+}
+
+template <typename Dtype>
 void Blob<Dtype>::ReshapeLike(const Blob<Dtype>& other) {
   Reshape(other.num(), other.channels(), other.length(), other.height(), other.width());
 }
@@ -42,6 +48,13 @@ template <typename Dtype>
 Blob<Dtype>::Blob(const int num, const int channels, const int length, const int height,
     const int width) {
   Reshape(num, channels, length, height, width);
+}
+
+// for backward compatibility
+template <typename Dtype>
+Blob<Dtype>::Blob(const int num, const int channels, const int height,
+    const int width) {
+  Reshape(num, channels, 1, height, width);
 }
 
 template <typename Dtype>

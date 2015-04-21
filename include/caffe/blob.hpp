@@ -18,7 +18,14 @@ class Blob {
   explicit Blob(const int num, const int channels, const int length, const int height,
     const int width);
 
+  explicit Blob(const int num, const int channels, const int height,
+    const int width);
+
   void Reshape(const int num, const int channels, const int length, const int height,
+    const int width);
+
+  // for backward compatibility
+  void Reshape(const int num, const int channels, const int height,
     const int width);
 
   void ReshapeLike(const Blob& other);
@@ -53,6 +60,10 @@ class Blob {
     return (((n * channels_ + c) * length_ + l) * height_ + h) * width_ + w;
   }
 
+  inline int offset(const int n, const int c, const int h,
+      const int w) const {
+	  return offset(n, c, 1, h, w);
+  }
   // Copy from source. If copy_diff is false, we copy the data; if copy_diff
   // is true, we copy the diff.
   void CopyFrom(const Blob<Dtype>& source, bool copy_diff = false,
@@ -63,9 +74,19 @@ class Blob {
     return *(cpu_data() + offset(n, c, l, h, w));
   }
 
+  inline Dtype data_at(const int n, const int c, const int h,
+      const int w) const {
+    return *(cpu_data() + offset(n, c, 1, h, w));
+  }
+
   inline Dtype diff_at(const int n, const int c, const int l, const int h,
       const int w) const {
     return *(cpu_diff() + offset(n, c, l, h, w));
+  }
+
+  inline Dtype diff_at(const int n, const int c, const int h,
+      const int w) const {
+    return *(cpu_diff() + offset(n, c, 1, h, w));
   }
 
   inline const shared_ptr<SyncedMemory>& data() const {
