@@ -62,7 +62,7 @@ class Blob {
 
   inline int offset(const int n, const int c, const int h,
       const int w) const {
-	  return offset(n, c, 1, h, w);
+	  return offset(n, c, 0, h, w);
   }
   // Copy from source. If copy_diff is false, we copy the data; if copy_diff
   // is true, we copy the diff.
@@ -76,7 +76,7 @@ class Blob {
 
   inline Dtype data_at(const int n, const int c, const int h,
       const int w) const {
-    return *(cpu_data() + offset(n, c, 1, h, w));
+    return *(cpu_data() + offset(n, c, 0, h, w));
   }
 
   inline Dtype diff_at(const int n, const int c, const int l, const int h,
@@ -86,7 +86,7 @@ class Blob {
 
   inline Dtype diff_at(const int n, const int c, const int h,
       const int w) const {
-    return *(cpu_diff() + offset(n, c, 1, h, w));
+    return *(cpu_diff() + offset(n, c, 0, h, w));
   }
 
   inline const shared_ptr<SyncedMemory>& data() const {

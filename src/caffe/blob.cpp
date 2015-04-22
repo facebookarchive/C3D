@@ -36,7 +36,10 @@ void Blob<Dtype>::Reshape(const int num, const int channels, const int length, c
 template <typename Dtype>
 void Blob<Dtype>::Reshape(const int num, const int channels, const int height,
     const int width) {
-	Reshape(num, channels, 1, height, width);
+	if (num ==0 && channels == 0 && height ==0 && width == 0)
+		Reshape(num, channels, 0, height, width);
+	else
+		Reshape(num, channels, 1, height, width);
 }
 
 template <typename Dtype>
@@ -54,7 +57,10 @@ Blob<Dtype>::Blob(const int num, const int channels, const int length, const int
 template <typename Dtype>
 Blob<Dtype>::Blob(const int num, const int channels, const int height,
     const int width) {
-  Reshape(num, channels, 1, height, width);
+	if (num ==0 && channels == 0 && height ==0 && width == 0)
+		Reshape(num, channels, 0, height, width);
+	else
+		Reshape(num, channels, 1, height, width);
 }
 
 template <typename Dtype>
