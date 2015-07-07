@@ -244,8 +244,8 @@ bool load_blob_from_binary<float>(const string fn_blob, Blob<float>* blob){
 	buff = blob->mutable_cpu_data();
 
 	fread(buff, sizeof(float), n * c * l * h * w, f);
+  fclose(f);
 	return true;
-	fclose(f);
 }
 
 template <>
