@@ -223,10 +223,6 @@ bool ReadImageSequenceToVolumeDatum(const char* img_dir, const int start_frm, co
  	return true;
 }
 
-
-
-
-
 template <>
 bool load_blob_from_binary<float>(const string fn_blob, Blob<float>* blob){
 	FILE *f;
@@ -244,7 +240,7 @@ bool load_blob_from_binary<float>(const string fn_blob, Blob<float>* blob){
 	buff = blob->mutable_cpu_data();
 
 	fread(buff, sizeof(float), n * c * l * h * w, f);
-  fclose(f);
+	fclose(f);
 	return true;
 }
 
@@ -268,6 +264,66 @@ bool load_blob_from_binary<double>(const string fn_blob, Blob<double>* blob){
 	fclose(f);
 	return true;
 }
+
+template <>
+bool load_blob_from_uint8_binary<float>(const string fn_blob, Blob<float>* blob){
+	FILE *f;
+	f = fopen(fn_blob.c_str(), "rb");
+	if (f==NULL)
+		return false;
+	int n, c, l, w, h;
+	float* buff;
+	fread(&n, sizeof(int), 1, f);
+	fread(&c, sizeof(int), 1, f);
+	fread(&l, sizeof(int), 1, f);
+	fread(&h, sizeof(int), 1, f);
+	fread(&w, sizeof(int), 1, f);
+	blob->Reshape(n, c, l, h, w);
+	buff = blob->mutable_cpu_data();
+
+	int count = n * c * l * h * w;
+	unsigned char* temp_buff = new unsigned char[count];
+
+	fread(temp_buff, sizeof(unsigned char), count, f);
+	fclose(f);
+
+	for (int i = 0; i < count; i++)
+		buff[i] = (float)temp_buff[i];
+
+	delete []temp_buff;
+	return true;
+}
+
+template <>
+bool load_blob_from_uint8_binary<double>(const string fn_blob, Blob<double>* blob){
+	FILE *f;
+	f = fopen(fn_blob.c_str(), "rb");
+	if (f==NULL)
+		return false;
+	int n, c, l, w, h;
+	double* buff;
+	fread(&n, sizeof(int), 1, f);
+	fread(&c, sizeof(int), 1, f);
+	fread(&l, sizeof(int), 1, f);
+	fread(&h, sizeof(int), 1, f);
+	fread(&w, sizeof(int), 1, f);
+	blob->Reshape(n, c, l, h, w);
+	buff = blob->mutable_cpu_data();
+
+
+	int count = n * c * l * h * w;
+	unsigned char* temp_buff = new unsigned char[count];
+
+	fread(temp_buff, sizeof(unsigned char), count, f);
+	fclose(f);
+
+	for (int i = 0; i < count; i++)
+		buff[i] = (double)temp_buff[i];
+
+	delete []temp_buff;
+	return true;
+}
+
 
 template <>
 bool save_blob_to_binary<float>(Blob<float>* blob, const string fn_blob, int num_index){
