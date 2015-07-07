@@ -63,6 +63,9 @@ template <typename Dtype>
 bool load_blob_from_binary(const string fn_blob, Blob<Dtype>* blob);
 
 template <typename Dtype>
+bool load_blob_from_uint8_binary(const string fn_blob, Blob<Dtype>* blob);
+
+template <typename Dtype>
 bool save_blob_to_binary(Blob<Dtype>* blob, const string fn_blob, int num_index);
 
 template <typename Dtype>
