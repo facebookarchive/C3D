@@ -112,7 +112,6 @@ class Blob {
   void FromProto(const BlobProto& proto);
   void Lift3DFromProto(const BlobProto& proto, const int l);
   void ToProto(BlobProto* proto, bool write_diff = false) const;
-  void SetAllValue(Dtype val);
 
   // Set the data_/diff_ shared_ptr to point to the SyncedMemory holding the
   // data_/diff_ of Blob other -- useful in layers which simply perform a copy

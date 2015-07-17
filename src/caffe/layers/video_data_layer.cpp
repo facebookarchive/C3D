@@ -398,7 +398,8 @@ void VideoDataLayer<Dtype>::SetUp(const vector<Blob<Dtype>*>& bottom,
     data_mean_.Reshape(1, datum_channels_, datum_length_, datum_height_, datum_width_);
     if (this->layer_param_.image_data_param().has_mean_value()){
     	LOG(INFO) << "Using mean value of " << this->layer_param_.image_data_param().mean_value();
-    	data_mean_.SetAllValue(this->layer_param_.image_data_param().mean_value());
+    	caffe::caffe_set(data_mean_.count(), (Dtype)this->layer_param_.image_data_param().mean_value(),
+    				(Dtype*)data_mean_.mutable_cpu_data());
     }
   }
 

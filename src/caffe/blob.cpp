@@ -225,14 +225,6 @@ void Blob<Dtype>::ToProto(BlobProto* proto, bool write_diff) const {
   }
 }
 
-template <typename Dtype>
-void Blob<Dtype>::SetAllValue(Dtype val){
-  Dtype* data_vec = mutable_cpu_data();
-  for (int i = 0; i < count_; ++i) {
-    data_vec[i] = (Dtype)val;
-  }
-}
-
 INSTANTIATE_CLASS(Blob);
 
 }  // namespace caffe
