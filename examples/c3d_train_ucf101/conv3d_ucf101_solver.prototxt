@@ -1,0 +1,20 @@
+train_net: "conv3d_ucf101_train.prototxt"
+test_net: "conv3d_ucf101_test.prototxt"
+test_iter: 100
+test_interval: 1000
+base_lr: 0.003
+momentum: 0.9
+weight_decay: 0.005
+lr_policy: "step"
+gamma: 0.1
+stepsize: 20000
+# Display every 20 iterations
+display: 20
+# The maximum number of iterations
+max_iter: 60000
+# snapshot intermediate results
+snapshot: 1000
+snapshot_prefix: "conv3d_ucf101"
+# solver mode: CPU or GPU
+solver_mode: GPU
+device_id: 0
