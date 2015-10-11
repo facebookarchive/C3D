@@ -384,7 +384,7 @@ void VideoDataLayer<Dtype>::SetUp(const vector<Blob<Dtype>*>& bottom,
   // check if we want to have mean
   if (this->layer_param_.image_data_param().has_mean_file()) {
     const string& mean_file = this->layer_param_.image_data_param().mean_file();
-    LOG(INFO) << "Loading mean file from" << mean_file;
+    LOG(INFO) << "Loading mean file from " << mean_file;
     BlobProto blob_proto;
     ReadProtoFromBinaryFileOrDie(mean_file.c_str(), &blob_proto);
     data_mean_.FromProto(blob_proto);
