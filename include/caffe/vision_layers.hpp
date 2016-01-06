@@ -267,6 +267,7 @@ class MemoryDataLayer : public Layer<Dtype> {
   //  will be given to Blob, which is mutable
   void Reset(Dtype* data, Dtype* label, int n);
   int datum_channels() { return datum_channels_; }
+  int datum_length() { return datum_length_; }
   int datum_height() { return datum_height_; }
   int datum_width() { return datum_width_; }
   int batch_size() { return batch_size_; }
@@ -282,6 +283,7 @@ class MemoryDataLayer : public Layer<Dtype> {
   Dtype* data_;
   Dtype* labels_;
   int datum_channels_;
+  int datum_length_;
   int datum_height_;
   int datum_width_;
   int datum_size_;

@@ -14,12 +14,13 @@ void MemoryDataLayer<Dtype>::SetUp(const vector<Blob<Dtype>*>& bottom,
   CHECK_EQ(top->size(), 2) << "Memory Data Layer takes two blobs as output.";
   batch_size_ = this->layer_param_.memory_data_param().batch_size();
   datum_channels_ = this->layer_param_.memory_data_param().channels();
+  datum_length_ = this->layer_param_.memory_data_param().length();
   datum_height_ = this->layer_param_.memory_data_param().height();
   datum_width_ = this->layer_param_.memory_data_param().width();
-  datum_size_ = datum_channels_ * datum_height_ * datum_width_;
+  datum_size_ = datum_channels_ * datum_length_ * datum_height_ * datum_width_;
   CHECK_GT(batch_size_ * datum_size_, 0) << "batch_size, channels, height,"
     " and width must be specified and positive in memory_data_param";
-  (*top)[0]->Reshape(batch_size_, datum_channels_, 1, datum_height_, datum_width_);
+  (*top)[0]->Reshape(batch_size_, datum_channels_, datum_length_, datum_height_, datum_width_);
   (*top)[1]->Reshape(batch_size_, 1, 1, 1, 1);
   data_ = NULL;
   labels_ = NULL;

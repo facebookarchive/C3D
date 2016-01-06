@@ -55,6 +55,7 @@ class CaffeBlob {
   string name() const { return name_; }
   int num() const { return blob_->num(); }
   int channels() const { return blob_->channels(); }
+  int length() const { return blob_->length(); }
   int height() const { return blob_->height(); }
   int width() const { return blob_->width(); }
   int count() const { return blob_->count(); }
@@ -79,9 +80,9 @@ class CaffeBlobWrap : public CaffeBlob {
       : CaffeBlob(blob), self_(p) {}
 
   object get_data() {
-      npy_intp dims[] = {num(), channels(), height(), width()};
+      npy_intp dims[] = {num(), channels(), length(), height(), width()};
 
-      PyObject *obj = PyArray_SimpleNewFromData(4, dims, NPY_FLOAT32,
+      PyObject *obj = PyArray_SimpleNewFromData(5, dims, NPY_FLOAT32,
                                                 blob_->mutable_cpu_data());
       PyArray_SetBaseObject(reinterpret_cast<PyArrayObject *>(obj), self_);
       Py_INCREF(self_);
@@ -91,9 +92,9 @@ class CaffeBlobWrap : public CaffeBlob {
   }
 
   object get_diff() {
-      npy_intp dims[] = {num(), channels(), height(), width()};
+      npy_intp dims[] = {num(), channels(), length(), height(), width()};
 
-      PyObject *obj = PyArray_SimpleNewFromData(4, dims, NPY_FLOAT32,
+      PyObject *obj = PyArray_SimpleNewFromData(5, dims, NPY_FLOAT32,
                                                 blob_->mutable_cpu_diff());
       PyArray_SetBaseObject(reinterpret_cast<PyArrayObject *>(obj), self_);
       Py_INCREF(self_);
@@ -160,12 +161,12 @@ struct CaffeNet {
 
   // Generate Python exceptions for badly shaped or discontiguous arrays.
   inline void check_contiguous_array(PyArrayObject* arr, string name,
-      int channels, int height, int width) {
+      int channels, int length, int height, int width) {
     if (!(PyArray_FLAGS(arr) & NPY_ARRAY_C_CONTIGUOUS)) {
       throw std::runtime_error(name + " must be C contiguous");
     }
-    if (PyArray_NDIM(arr) != 4) {
-      throw std::runtime_error(name + " must be 4-d");
+    if (PyArray_NDIM(arr) != 5) {
+      throw std::runtime_error(name + " must be 5-d");
     }
     if (PyArray_TYPE(arr) != NPY_FLOAT32) {
       throw std::runtime_error(name + " must be float32");
@@ -173,10 +174,13 @@ struct CaffeNet {
     if (PyArray_DIMS(arr)[1] != channels) {
       throw std::runtime_error(name + " has wrong number of channels");
     }
-    if (PyArray_DIMS(arr)[2] != height) {
+    if (PyArray_DIMS(arr)[2] != length) {
+      throw std::runtime_error(name + " has wrong length");
+    }
+    if (PyArray_DIMS(arr)[3] != height) {
       throw std::runtime_error(name + " has wrong height");
     }
-    if (PyArray_DIMS(arr)[3] != width) {
+    if (PyArray_DIMS(arr)[4] != width) {
       throw std::runtime_error(name + " has wrong width");
     }
   }
@@ -204,8 +208,9 @@ struct CaffeNet {
     PyArrayObject* labels_arr =
         reinterpret_cast<PyArrayObject*>(labels_obj.ptr());
     check_contiguous_array(data_arr, "data array", md_layer->datum_channels(),
-        md_layer->datum_height(), md_layer->datum_width());
-    check_contiguous_array(labels_arr, "labels array", 1, 1, 1);
+        md_layer->datum_length(), md_layer->datum_height(),
+        md_layer->datum_width());
+    check_contiguous_array(labels_arr, "labels array", 1, 1, 1, 1);
     if (PyArray_DIMS(data_arr)[0] != PyArray_DIMS(labels_arr)[0]) {
       throw std::runtime_error("data and labels must have the same first"
           " dimension");
@@ -330,6 +335,7 @@ BOOST_PYTHON_MODULE(_caffe) {
       .add_property("name",     &CaffeBlob::name)
       .add_property("num",      &CaffeBlob::num)
       .add_property("channels", &CaffeBlob::channels)
+      .add_property("length",   &CaffeBlob::length)
       .add_property("height",   &CaffeBlob::height)
       .add_property("width",    &CaffeBlob::width)
       .add_property("count",    &CaffeBlob::count)
