@@ -59,8 +59,8 @@ def _Net_forward(self, blobs=None, **kwargs):
         for in_, blob in kwargs.iteritems():
             if blob.shape[0] != self.blobs[in_].num:
                 raise Exception('Input is not batch sized')
-            if blob.ndim != 4:
-                raise Exception('{} blob is not 4-d'.format(in_))
+            if blob.ndim != 5:
+                raise Exception('{} blob is not 5-d'.format(in_))
             self.blobs[in_].data[...] = blob
 
     self._forward()
@@ -93,8 +93,8 @@ def _Net_backward(self, diffs=None, **kwargs):
         for top, diff in kwargs.iteritems():
             if diff.shape[0] != self.blobs[top].num:
                 raise Exception('Diff is not batch sized')
-            if diff.ndim != 4:
-                raise Exception('{} diff is not 4-d'.format(top))
+            if diff.ndim != 5:
+                raise Exception('{} diff is not 5-d'.format(top))
             self.blobs[top].diff[...] = diff
 
     self._backward()

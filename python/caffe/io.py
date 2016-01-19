@@ -87,10 +87,10 @@ def blobproto_to_array(blob, return_diff=False):
   """
   if return_diff:
     return np.array(blob.diff).reshape(
-        blob.num, blob.channels, blob.height, blob.width)
+        blob.num, blob.channels, blob.length, blob.height, blob.width)
   else:
     return np.array(blob.data).reshape(
-        blob.num, blob.channels, blob.height, blob.width)
+        blob.num, blob.channels, blob.length, blob.height, blob.width)
 
 
 def array_to_blobproto(arr, diff=None):
@@ -98,10 +98,10 @@ def array_to_blobproto(arr, diff=None):
   convert the diff. You need to make sure that arr and diff have the same
   shape, and this function does not do sanity check.
   """
-  if arr.ndim != 4:
+  if arr.ndim != 5:
     raise ValueError('Incorrect array shape.')
   blob = caffe_pb2.BlobProto()
-  blob.num, blob.channels, blob.height, blob.width = arr.shape;
+  blob.num, blob.channels, blob.length, blob.height, blob.width = arr.shape;
   blob.data.extend(arr.astype(float).flat)
   if diff is not None:
     blob.diff.extend(diff.astype(float).flat)
@@ -130,10 +130,10 @@ def array_to_datum(arr, label=0):
   the output data will be encoded as a string. Otherwise, the output data
   will be stored in float format.
   """
-  if arr.ndim != 3:
+  if arr.ndim != 4:
     raise ValueError('Incorrect array shape.')
   datum = caffe_pb2.Datum()
-  datum.channels, datum.height, datum.width = arr.shape
+  datum.channels, datum.length, datum.height, datum.width = arr.shape
   if arr.dtype == np.uint8:
     datum.data = arr.tostring()
   else:
@@ -148,7 +148,7 @@ def datum_to_array(datum):
   """
   if len(datum.data):
     return np.fromstring(datum.data, dtype = np.uint8).reshape(
-        datum.channels, datum.height, datum.width)
+        datum.channels, datum.length, datum.height, datum.width)
   else:
     return np.array(datum.float_data).astype(float).reshape(
-        datum.channels, datum.height, datum.width)
+        datum.channels, datum.length, datum.height, datum.width)

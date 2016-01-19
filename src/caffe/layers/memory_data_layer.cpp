@@ -18,7 +18,7 @@ void MemoryDataLayer<Dtype>::SetUp(const vector<Blob<Dtype>*>& bottom,
   datum_height_ = this->layer_param_.memory_data_param().height();
   datum_width_ = this->layer_param_.memory_data_param().width();
   datum_size_ = datum_channels_ * datum_length_ * datum_height_ * datum_width_;
-  CHECK_GT(batch_size_ * datum_size_, 0) << "batch_size, channels, height,"
+  CHECK_GT(batch_size_ * datum_size_, 0) << "batch_size, channels, length, height,"
     " and width must be specified and positive in memory_data_param";
   (*top)[0]->Reshape(batch_size_, datum_channels_, datum_length_, datum_height_, datum_width_);
   (*top)[1]->Reshape(batch_size_, 1, 1, 1, 1);
