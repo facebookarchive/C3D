@@ -28,14 +28,43 @@ def resize_image(im, new_dims, interp_order=1):
     Resize an image array with interpolation.
 
     Take
-    im: (H x W x K) ndarray
+    im: (H x W x K) or (H x W x K x L) ndarray
     new_dims: (height, width) tuple of new dimensions.
     interp_order: interpolation order, default is linear.
 
     Give
     im: resized ndarray with shape (new_dims[0], new_dims[1], K)
     """
-    return skimage.transform.resize(im, new_dims, order=interp_order)
+
+    im_min, im_max = im.min(), im.max()
+    if im_max > im_min:
+        # skimage is fast but only understands {1,3} channel images
+        # in [0, 1].
+        im_std = (im - im_min) / (im_max - im_min)
+    else:
+        # the image is a constant -- avoid divide by 0
+        # TODO(chuck): cover for 4-dim im case
+        ret = np.empty((new_dims[0], new_dims[1], im.shape[-1]),
+                       dtype=np.float32)
+        ret.fill(im_min)
+        return ret
+
+    if im.ndim == 3:
+        resized = skimage.transform.resize(im_std, new_dims, order=interp_order)
+        resized = resized * (im_max - im_min) + im_min
+    elif im.ndim == 4:
+        resized = np.empty(new_dims + im.shape[-2:])
+        for l in range(im.shape[3]):
+            resized[:,:,:,l] = skimage.transform.resize(
+                    im_std[:,:,:,l],
+                    new_dims,
+                    order=interp_order
+                    )
+            resized[:,:,:,l] = resized[:,:,:,l] * (im_max - im_min) + im_min
+    else:
+        raise ValueError('Incorrect input array shape.')
+
+    return resized
 
 
 def oversample(images, crop_dims):
