@@ -21,7 +21,7 @@ void SplitLayer<Dtype>::SetUp(const vector<Blob<Dtype>*>& bottom,
     } else {
       CHECK_NE((*top)[i], bottom[0]) << "Only 0th top blob may be in place.";
     }
-    (*top)[i]->Reshape(bottom[0]->num(), bottom[0]->channels(), 1,
+    (*top)[i]->Reshape(bottom[0]->num(), bottom[0]->channels(), bottom[0]->length(),
                        bottom[0]->height(), bottom[0]->width());
     CHECK_EQ(count_, (*top)[i]->count());
   }
