@@ -44,6 +44,7 @@ class ConcatLayer : public Layer<Dtype> {
   int count_;
   int num_;
   int channels_;
+  int length_;
   int height_;
   int width_;
   int concat_dim_;

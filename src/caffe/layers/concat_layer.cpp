@@ -26,6 +26,7 @@ void ConcatLayer<Dtype>::SetUp(const vector<Blob<Dtype>*>& bottom,
   count_ = bottom[0]->count();
   num_ = bottom[0]->num();
   channels_ = bottom[0]->channels();
+  length_ = bottom[0]->length();
   height_ = bottom[0]->height();
   width_ = bottom[0]->width();
   for (int i = 1; i < bottom.size(); ++i) {
@@ -35,12 +36,14 @@ void ConcatLayer<Dtype>::SetUp(const vector<Blob<Dtype>*>& bottom,
     } else if (concat_dim_ == 1) {
       channels_ += bottom[i]->channels();
     } else if (concat_dim_ == 2) {
-      height_ += bottom[i]->height();
+      length_ += bottom[i]->length();
     } else if (concat_dim_ == 3) {
+      height_ += bottom[i]->height();
+    } else if (concat_dim_ == 4) {
       width_ += bottom[i]->width();
     }
   }
-  (*top)[0]->Reshape(num_, channels_, 1, height_, width_);
+  (*top)[0]->Reshape(num_, channels_, length_, height_, width_);
   CHECK_EQ(count_, (*top)[0]->count());
 }
 
