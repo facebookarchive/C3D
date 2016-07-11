@@ -127,7 +127,7 @@ message LayerParameter {
   // line above the enum. Update the next available ID when you add a new
   // LayerType.
   //
-  // LayerType next available ID: 30 (last added: MEMORY_DATA)
+  // LayerType next available ID: 40 (last added: DOWN_SAMPLING)
   enum LayerType {
     // "NONE" layer type is 0th enum element so that we don't cause confusion
     // by defaulting to an existent LayerType (instead, should usually error if
@@ -166,6 +166,12 @@ message LayerParameter {
     POOLING3D = 31;
     VOLUME_DATA = 32;
     VIDEO_DATA = 33;
+    DECONVOLUTION3D = 34;
+    VOXEL_SOFTMAX = 35;
+    VOXEL_SOFTMAX_LOSS = 36;
+    VIDEO_WITH_VOXEL_TRUTH_DATA = 37;
+    VOXEL_CUSTOM_LOSS = 38;
+    DOWN_SAMPLING = 39;
   }
   optional LayerType type = 5; // the layer type from the enum above
 
@@ -192,6 +198,7 @@ message LayerParameter {
   optional PoolingParameter pooling_param = 19;
   optional PowerParameter power_param = 21;
   optional WindowDataParameter window_data_param = 20;
+  optional DownSamplingParameter down_sampling_param = 23;
 
   // DEPRECATED: The layer parameters specified as a V0LayerParameter.
   // This should never be used by any code except to upgrade to the new
@@ -205,6 +212,18 @@ message ConcatParameter {
   // the other dimensions must be the same for all the bottom blobs
   // By default it will concatenate blobs along channels dimension
   optional uint32 concat_dim = 1 [default = 1];
+}
+
+// Message that stores parameters used by DownSamplingLayer
+message DownSamplingParameter {
+  enum DownSamplingType {
+  	NONE = 0;
+  	VOTE = 1;
+  	AVERAGE = 2;
+  }
+  optional DownSamplingType type = 1 [default = VOTE];
+  optional int32 spatial_factor = 2;
+  optional int32 temporal_factor = 3;
 }
 
 // Message that stores parameters used by ConvolutionLayer
@@ -307,7 +326,13 @@ message ImageDataParameter {
   optional int32 sampling_rate = 14 [default = 1];
   optional bool use_label = 15 [default = true];
   optional bool use_temporal_jitter = 16 [default = false];
-  optional float mean_value = 17 [default = 0];  
+  optional float mean_value = 17 [default = 0];
+  optional uint32 num_truth_channels = 18 [default = 1];
+  optional bool use_byte_input = 19 [default = false];
+  optional bool is_flow = 20 [default = false];
+  optional float truth_scale = 21 [default = 1];
+  optional float clip_min = 22;
+  optional float clip_max = 23;
 }
 
 
