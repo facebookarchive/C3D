@@ -1,0 +1,20 @@
+train_net: "deconv3d_gatech.prototxt"
+# test_net: "conv3d_ucf101_test.prototxt"
+test_iter: 0
+test_interval: 0
+base_lr: 0.0001
+momentum: 0.9
+weight_decay: 0.005
+lr_policy: "step"
+gamma: 0.1
+stepsize: 30000
+# Display every 200 iterations
+display: 20
+# The maximum number of iterations
+max_iter: 100000
+# snapshot intermediate results
+snapshot: 5000
+snapshot_prefix: "gatech_segmentation_scaled_128"
+# solver mode: CPU or GPU
+solver_mode: GPU
+device_id: 2
