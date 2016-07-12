@@ -64,7 +64,7 @@ Dtype ConcatLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
     for (int i = 0; i < bottom.size(); ++i) {
       const Dtype* bottom_data = bottom[i]->cpu_data();
       int num_elem =
-        bottom[i]->channels()*bottom[i]->height()*bottom[i]->width();
+        bottom[i]->channels()*bottom[i]->length()*bottom[i]->height()*bottom[i]->width();
       for (int n = 0; n < num_; ++n) {
         caffe_copy(num_elem, bottom_data+bottom[i]->offset(n),
           top_data+(*top)[0]->offset(n, offset_channel));
@@ -93,7 +93,7 @@ void ConcatLayer<Dtype>::Backward_cpu(const vector<Blob<Dtype>*>& top,
     for (int i = 0; i < bottom->size(); ++i) {
       Blob<Dtype>* blob = (*bottom)[i];
       Dtype* bottom_diff = blob->mutable_cpu_diff();
-      int num_elem = blob->channels()*blob->height()*blob->width();
+      int num_elem = blob->channels()*blob->length()*blob->height()*blob->width();
       for (int n = 0; n < num_; ++n) {
         caffe_copy(num_elem, top_diff+top[0]->offset(n, offset_channel),
           bottom_diff+blob->offset(n));

@@ -167,11 +167,12 @@ message LayerParameter {
     VOLUME_DATA = 32;
     VIDEO_DATA = 33;
     DECONVOLUTION3D = 34;
-    VOXEL_SOFTMAX = 35;
-    VOXEL_SOFTMAX_LOSS = 36;
-    VIDEO_WITH_VOXEL_TRUTH_DATA = 37;
-    VOXEL_CUSTOM_LOSS = 38;
-    DOWN_SAMPLING = 39;
+    VIDEO_SEGMENTATION_DATA = 35;
+    VOXEL_SOFTMAX = 36;
+    VOXEL_SOFTMAX_LOSS = 37;
+    VIDEO_WITH_VOXEL_TRUTH_DATA = 38;
+    VOXEL_CUSTOM_LOSS = 39;
+    DOWN_SAMPLING = 40;
   }
   optional LayerType type = 5; // the layer type from the enum above
 

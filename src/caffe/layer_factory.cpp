@@ -13,6 +13,7 @@
 #include "caffe/volume_data_layer.hpp"
 #include "caffe/video_data_layer.hpp"
 #include "caffe/deconvolution3d_layer.hpp"
+#include "caffe/video_segmentation_data_layer.hpp"
 #include "caffe/voxel_wise_softmax_layer.hpp"
 #include "caffe/voxel_wise_softmax_loss_layer.hpp"
 #include "caffe/video_with_voxel_truth_data_layer.hpp"
@@ -100,6 +101,8 @@ Layer<Dtype>* GetLayer(const LayerParameter& param) {
 	return new VideoDataLayer<Dtype>(param);
   case LayerParameter_LayerType_DECONVOLUTION3D:
   	return new Deconvolution3DLayer<Dtype>(param);
+  case LayerParameter_LayerType_VIDEO_SEGMENTATION_DATA:
+	return new VideoSegmentationDataLayer<Dtype>(param);
   case LayerParameter_LayerType_VOXEL_SOFTMAX:
 	return new VoxelWiseSoftmaxLayer<Dtype>(param);
   case LayerParameter_LayerType_VOXEL_SOFTMAX_LOSS:
