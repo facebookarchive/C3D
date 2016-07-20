@@ -223,6 +223,50 @@ bool ReadImageSequenceToVolumeDatum(const char* img_dir, const int start_frm, co
  	return true;
 }
 
+bool ReadImageVectorToVolumeDatum(const std::vector<cv::Mat>& imgs, const int label,
+        const int length, const int height, const int width, VolumeDatum* datum){
+	cv::Mat img;
+	char *buffer;
+	int offset, channel_size, image_size, data_size;
+
+	datum->set_channels(3);
+	datum->set_length(length);
+	datum->set_label(label);
+	datum->clear_data();
+	datum->clear_float_data();
+
+	offset = 0;
+	for (int i=0; i<imgs.size(); i++)
+	{
+		img = imgs[i];
+		if (height > 0 && width > 0) {
+		    cv::resize(img, img, cv::Size(width, height));
+		}
+
+		if (!img.data){
+			LOG(ERROR) << "Could not open image";
+			return false;
+		}
+
+		if (i==0){
+			datum->set_height(img.rows);
+			datum->set_width(img.cols);
+			image_size = img.rows * img.cols;
+			channel_size = image_size * length;
+			data_size = channel_size * 3;
+			buffer = new char[data_size];
+		}
+		for (int c=0; c<3; c++){
+			ImageChannelToBuffer(&img, buffer + c * channel_size + offset, c);
+		}
+		offset += image_size;
+	}
+	CHECK(offset == channel_size) << "wrong offset size" << std::endl;
+	datum->set_data(buffer, data_size);
+	delete []buffer;
+	return true;
+}
+
 template <>
 bool load_blob_from_binary<float>(const string fn_blob, Blob<float>* blob){
 	FILE *f;

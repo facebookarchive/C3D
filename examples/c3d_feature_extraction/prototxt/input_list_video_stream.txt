@@ -1,0 +1,3 @@
+input/avi/v_ApplyEyeMakeup_g01_c01.avi 0 16 0
+input/avi/v_BaseballPitch_g01_c01.avi 0 16 0
+CAMERA 0 16 0

@@ -21,6 +21,7 @@
 #include <string>
 #include <utility>
 #include <vector>
+#include <deque>
 
 #include "pthread.h"
 #include "boost/scoped_ptr.hpp"
@@ -49,6 +50,9 @@ class VideoDataLayer : public Layer<Dtype> {
   virtual void SetUp(const vector<Blob<Dtype>*>& bottom,
       vector<Blob<Dtype>*>* top);
 
+  vector<string> pop_stream_names(int num);
+  bool is_stream_done() { return is_stream_done_; }
+
  protected:
   virtual Dtype Forward_cpu(const vector<Blob<Dtype>*>& bottom,
       vector<Blob<Dtype>*>* top);
@@ -66,9 +70,14 @@ class VideoDataLayer : public Layer<Dtype> {
   shared_ptr<Caffe::RNG> prefetch_rng_;
   vector<string> file_list_;
   vector<int> start_frm_list_;
+  vector<int> num_of_frames_list_;
+  vector<int> interval_list_;
   vector<int> label_list_;
   vector<int> shuffle_index_;
   int lines_id_;
+  int interval_jump_;
+  std::deque<string> stream_names_;
+  bool is_stream_done_;
 
   int datum_channels_;
   int datum_length_;

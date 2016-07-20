@@ -59,6 +59,9 @@ inline bool ReadImageSequenceToVolumeDatum(const char* img_dir, const int start_
 	return ReadImageSequenceToVolumeDatum(img_dir, start_frm, label, length, 0, 0, sampling_rate, datum);
 }
 
+bool ReadImageVectorToVolumeDatum(const std::vector<cv::Mat>& imgs, const int label,
+        const int length, const int height, const int width, VolumeDatum* datum);
+
 template <typename Dtype>
 bool load_blob_from_binary(const string fn_blob, Blob<Dtype>* blob);
 
