@@ -13,7 +13,10 @@ import cv2
 
 ###################################################################
 # Point to the C3D directory
-caffe_root = os.path.join('../..', os.path.dirname(os.path.realpath(__file__)))
+caffe_root = os.path.abspath(os.path.join(
+        os.path.dirname(os.path.realpath(__file__)),
+        '../..'
+        ))
 
 # GPU to use
 gpu_id = 0
@@ -638,6 +641,24 @@ layers {{
 def main():
     ''' Extract and save features '''
 
+    # a video is the first argument
+    # if missing, use a sample video
+    if len(sys.argv) == 1:
+        print '''Usage: python {} <video file> (<optional output directory>)
+For example, "python {} {}" will extract features from an example image.'''.format(
+        sys.argv[0],
+        sys.argv[0],
+        os.path.join(
+                caffe_root,
+                'examples',
+                'c3d_feature_extraction',
+                'input',
+                'avi',
+                'v_BaseballPitch_g01_c01.avi'
+                )
+        )
+        sys.exit(-1)
+
     # trained model (will be downloaded if missing)
     trained_model = os.path.join(
         caffe_root,
@@ -651,12 +672,7 @@ def main():
     # save extracted frames temporarily
     tmp_dir = '/tmp'
 
-    # a video is the first argument
-    # if missing, use a sample video
-    if len(sys.argv) > 1:
-        video_file = sys.argv[1]
-    else:
-        video_file = '/home/chuck/tmp/v_Bowling_g13_c02.avi'
+    video_file = sys.argv[1]
 
     # where feature csv file will be saved --
     # where the video is (by default), or second argument
