@@ -120,6 +120,12 @@ LIBRARIES := cudart cublas curand \
 	hdf5_hl hdf5 \
 	opencv_core opencv_highgui opencv_imgproc #\
 	#mat mx
+
+# handle OpenCV dependence
+ifeq ($(OPENCV_VERSION), 3)
+	LIBRARIES += opencv_imgcodecs opencv_videoio
+endif
+
 PYTHON_LIBRARIES := boost_python python2.7
 WARNINGS := -Wall
 
