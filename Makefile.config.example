@@ -14,6 +14,9 @@ CUDA_ARCH := -gencode arch=compute_20,code=sm_20 \
 		-gencode=arch=compute_50,code=sm_50 \
 		#-gencode=arch=compute_50,code=compute_50
 
+# Uncomment if your OpenCV version >= 3.0
+# OPENCV_VERSION := 3
+
 # BLAS choice:
 # atlas for ATLAS (default)
 # mkl for MKL
