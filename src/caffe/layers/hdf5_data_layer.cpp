@@ -35,7 +35,7 @@ void HDF5DataLayer<Dtype>::LoadHDF5FileData(const char* filename) {
   }
 
   const int MIN_DATA_DIM = 2;
-  const int MAX_DATA_DIM = 4;
+  const int MAX_DATA_DIM = 5;
   hdf5_load_nd_dataset(
     file_id, "data",  MIN_DATA_DIM, MAX_DATA_DIM, &data_blob_);
 
@@ -77,13 +77,13 @@ void HDF5DataLayer<Dtype>::SetUp(const vector<Blob<Dtype>*>& bottom,
 
   // Reshape blobs.
   const int batch_size = this->layer_param_.hdf5_data_param().batch_size();
-  (*top)[0]->Reshape(batch_size, data_blob_.channels(), 1,
+  (*top)[0]->Reshape(batch_size, data_blob_.channels(), data_blob_.length(),
                      data_blob_.width(), data_blob_.height());
-  (*top)[1]->Reshape(batch_size, label_blob_.channels(), 1,
+  (*top)[1]->Reshape(batch_size, label_blob_.channels(), data_blob_.length(),
                      label_blob_.width(), label_blob_.height());
   LOG(INFO) << "output data size: " << (*top)[0]->num() << ","
-      << (*top)[0]->channels() << "," << (*top)[0]->height() << ","
-      << (*top)[0]->width();
+      << (*top)[0]->channels() << "," << (*top)[0]->length() << ","
+      << (*top)[0]->height() << "," << (*top)[0]->width();
 }
 
 template <typename Dtype>
