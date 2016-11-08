@@ -41,6 +41,15 @@ int main(int argc, char** argv) {
 
 template<typename Dtype>
 int feature_extraction_pipeline(int argc, char** argv) {
+	const int num_required_args = 7;
+	if (argc < num_required_args) {
+		LOG(ERROR) << 
+		"\nUsage: extract_image_features.bin <feature_extractor_prototxt_file>"
+		" <c3d_pre_trained_model> <gpu_id> <mini_batch_size> <number_of_mini_batches>"
+		" <output_prefix_file> feature_name1> [<feature_name2>, ..]\n";
+		return 1;
+	}
+
   char* net_proto = argv[1];
   char* pretrained_model = argv[2];
   int device_id = atoi(argv[3]);
