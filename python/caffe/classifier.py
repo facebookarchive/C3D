@@ -22,6 +22,7 @@ class Classifier(caffe.Net):
         gpu, mean_file, input_scale, channel_swap: convenience params for
             setting mode, mean, input scale, and channel order.
         """
+	#print ">>>>>>>>>>>>>>>> classifier __init__ "
         caffe.Net.__init__(self, model_file, pretrained_file)
         self.set_phase_test()
 
@@ -56,6 +57,7 @@ class Classifier(caffe.Net):
         predictions: (N x C) ndarray of class probabilities
                      for N images and C classes.
         """
+	#print ">>>>>>>>>>>>>>>> classifier predict "
         # Scale to standardize input dimensions.
         inputs = np.asarray([caffe.io.resize_image(im, self.image_dims)
                              for im in inputs])

@@ -16,10 +16,11 @@ void MemoryDataLayer<Dtype>::SetUp(const vector<Blob<Dtype>*>& bottom,
   datum_channels_ = this->layer_param_.memory_data_param().channels();
   datum_height_ = this->layer_param_.memory_data_param().height();
   datum_width_ = this->layer_param_.memory_data_param().width();
-  datum_size_ = datum_channels_ * datum_height_ * datum_width_;
-  CHECK_GT(batch_size_ * datum_size_, 0) << "batch_size, channels, height,"
+  datum_length_ = this->layer_param_.memory_data_param().width(); ///// No idea how to insert .length() here. // gives error
+  datum_size_ = datum_channels_ * datum_height_ * datum_width_ * datum_length_;
+  CHECK_GT(batch_size_ * datum_size_, 0) << "batch_size, channels, height,length"
     " and width must be specified and positive in memory_data_param";
-  (*top)[0]->Reshape(batch_size_, datum_channels_, 1, datum_height_, datum_width_);
+  (*top)[0]->Reshape(batch_size_, datum_channels_, datum_length_, datum_height_, datum_width_);
   (*top)[1]->Reshape(batch_size_, 1, 1, 1, 1);
   data_ = NULL;
   labels_ = NULL;
@@ -41,8 +42,7 @@ Dtype MemoryDataLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
       vector<Blob<Dtype>*>* top) {
   CHECK(data_) << "MemoryDataLayer needs to be initalized by calling Reset";
   (*top)[0]->set_cpu_data(data_ + pos_ * datum_size_);
-  (*top)[1]->set_cpu_data(labels_ + pos_);
-  pos_ = (pos_ + batch_size_) % n_;
+  (*top)[1]->set_cpu_data(labels_ + pos_); pos_ = (pos_ + batch_size_) % n_;
   return Dtype(0.);
 }
 

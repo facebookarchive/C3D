@@ -13,6 +13,7 @@
 #include <string>  // NOLINT(build/include_order)
 #include <vector>  // NOLINT(build/include_order)
 #include <fstream>  // NOLINT
+#include <iostream>
 
 #include "caffe/caffe.hpp"
 
@@ -23,7 +24,7 @@
 #define PyArray_SetBaseObject(arr, x) (PyArray_BASE(arr) = (x))
 #endif
 
-
+using namespace std;
 using namespace caffe;  // NOLINT(build/namespaces)
 using boost::python::extract;
 using boost::python::len;
@@ -56,6 +57,7 @@ class CaffeBlob {
   int num() const { return blob_->num(); }
   int channels() const { return blob_->channels(); }
   int height() const { return blob_->height(); }
+  int length() const { return blob_->length();}
   int width() const { return blob_->width(); }
   int count() const { return blob_->count(); }
 
@@ -63,7 +65,6 @@ class CaffeBlob {
   bool operator == (const CaffeBlob &other) {
       return this->blob_ == other.blob_;
   }
-
  protected:
   shared_ptr<Blob<float> > blob_;
   string name_;
@@ -79,9 +80,9 @@ class CaffeBlobWrap : public CaffeBlob {
       : CaffeBlob(blob), self_(p) {}
 
   object get_data() {
-      npy_intp dims[] = {num(), channels(), height(), width()};
+      npy_intp dims[] = {num(), channels(), height(), width(), length()};
 
-      PyObject *obj = PyArray_SimpleNewFromData(4, dims, NPY_FLOAT32,
+      PyObject *obj = PyArray_SimpleNewFromData(5, dims, NPY_FLOAT32,
                                                 blob_->mutable_cpu_data());
       PyArray_SetBaseObject(reinterpret_cast<PyArrayObject *>(obj), self_);
       Py_INCREF(self_);
@@ -91,9 +92,9 @@ class CaffeBlobWrap : public CaffeBlob {
   }
 
   object get_diff() {
-      npy_intp dims[] = {num(), channels(), height(), width()};
+      npy_intp dims[] = {num(), channels(), height(), width(), length()};
 
-      PyObject *obj = PyArray_SimpleNewFromData(4, dims, NPY_FLOAT32,
+      PyObject *obj = PyArray_SimpleNewFromData(5, dims, NPY_FLOAT32,
                                                 blob_->mutable_cpu_diff());
       PyArray_SetBaseObject(reinterpret_cast<PyArrayObject *>(obj), self_);
       Py_INCREF(self_);
@@ -142,6 +143,7 @@ struct CaffeNet {
   }
 
   CaffeNet(string param_file, string pretrained_param_file) {
+	  //cout<< " >>>>>>>>>>>>>>>>>> _caffe.cpp 145 CaffeNet" << param_file << "  " << pretrained_param_file << endl;
     Init(param_file);
     CheckFile(pretrained_param_file);
     net_->CopyTrainedLayersFrom(pretrained_param_file);
@@ -151,6 +153,7 @@ struct CaffeNet {
       : net_(net) {}
 
   void Init(string param_file) {
+    //cout<< " >>>>>>>>>>>>>>>>>> _caffe.cpp 156 Init " << param_file << endl;
     CheckFile(param_file);
     net_.reset(new Net<float>(param_file));
   }
@@ -160,7 +163,7 @@ struct CaffeNet {
 
   // Generate Python exceptions for badly shaped or discontiguous arrays.
   inline void check_contiguous_array(PyArrayObject* arr, string name,
-      int channels, int height, int width) {
+      int channels, int height, int width, int length) {
     if (!(PyArray_FLAGS(arr) & NPY_ARRAY_C_CONTIGUOUS)) {
       throw std::runtime_error(name + " must be C contiguous");
     }
@@ -179,6 +182,10 @@ struct CaffeNet {
     if (PyArray_DIMS(arr)[3] != width) {
       throw std::runtime_error(name + " has wrong width");
     }
+    if (PyArray_DIMS(arr)[4] != length) {
+      throw std::runtime_error(name + " has wrong length");
+    }
+
   }
 
   void Forward() {
@@ -204,8 +211,8 @@ struct CaffeNet {
     PyArrayObject* labels_arr =
         reinterpret_cast<PyArrayObject*>(labels_obj.ptr());
     check_contiguous_array(data_arr, "data array", md_layer->datum_channels(),
-        md_layer->datum_height(), md_layer->datum_width());
-    check_contiguous_array(labels_arr, "labels array", 1, 1, 1);
+        md_layer->datum_height(), md_layer->datum_width(), md_layer->datum_length());
+    check_contiguous_array(labels_arr, "labels array", 1, 1, 1,1);
     if (PyArray_DIMS(data_arr)[0] != PyArray_DIMS(labels_arr)[0]) {
       throw std::runtime_error("data and labels must have the same first"
           " dimension");
@@ -331,7 +338,9 @@ BOOST_PYTHON_MODULE(_caffe) {
       .add_property("num",      &CaffeBlob::num)
       .add_property("channels", &CaffeBlob::channels)
       .add_property("height",   &CaffeBlob::height)
+      .add_property("length",   &CaffeBlob::length)
       .add_property("width",    &CaffeBlob::width)
+      //.add_property("length",   &CaffeBlob::width) // added something
       .add_property("count",    &CaffeBlob::count)
       .add_property("data",     &CaffeBlobWrap::get_data)
       .add_property("diff",     &CaffeBlobWrap::get_diff);

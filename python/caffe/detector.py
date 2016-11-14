@@ -35,6 +35,7 @@ class Detector(caffe.Net):
         gpu, mean_file, input_scale, channel_swap: convenience params for
             setting mode, mean, input scale, and channel order.
         """
+	print ">>>>>>>>>>>>>>>> Detector __init__ "
         caffe.Net.__init__(self, model_file, pretrained_file)
         self.set_phase_test()
 
@@ -63,6 +64,7 @@ class Detector(caffe.Net):
         detections: list of {filename: image filename, window: crop coordinates,
             predictions: prediction vector} dicts.
         """
+	print ">>>>>>>>>>>>>>>> Detector detect_windows"
         # Extract windows.
         window_inputs = []
         for image_fname, windows in images_windows:
@@ -103,6 +105,7 @@ class Detector(caffe.Net):
         detections: list of {filename: image filename, window: crop coordinates,
             predictions: prediction vector} dicts.
         """
+	print ">>>>>>>>>>>>>>>> Detector detect_selective_search"
         import selective_search_ijcv_with_python as selective_search
         # Make absolute paths so MATLAB can find the files.
         image_fnames = [os.path.abspath(f) for f in image_fnames]

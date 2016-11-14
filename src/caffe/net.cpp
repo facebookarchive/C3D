@@ -12,7 +12,8 @@
 #include "caffe/util/io.hpp"
 #include "caffe/util/insert_splits.hpp"
 #include "caffe/util/upgrade_proto.hpp"
-
+#include <iostream>
+using namespace std;
 using std::pair;
 using std::map;
 using std::set;
@@ -45,14 +46,16 @@ void Net<Dtype>::Init(const NetParameter& in_param) {
       << "Incorrect bottom blob dimension specifications.";
   size_t memory_used = 0;
   // set the input blobs
+  LOG(INFO) << ">>>>>>>>>>>> Line 51 cpp" ;
   for (int i = 0; i < param.input_size(); ++i) {
     const string& blob_name = param.input(i);
     shared_ptr<Blob<Dtype> > blob_pointer(
-        new Blob<Dtype>(param.input_dim(i * 4),
-                        param.input_dim(i * 4 + 1),
-                        param.input_dim(i * 4 + 2),
-                        param.input_dim(i * 4 + 3),
-                        param.input_dim(i * 4 + 4)));
+        new Blob<Dtype>(param.input_dim(i * 5),
+                        param.input_dim(i * 5 + 1),
+                        param.input_dim(i * 5 + 2),
+                        param.input_dim(i * 5 + 3),
+                        param.input_dim(i * 5 + 4)));
+    
     blobs_.push_back(blob_pointer);
     blob_names_.push_back(blob_name);
     blob_need_backward_.push_back(param.force_backward());
@@ -62,7 +65,7 @@ void Net<Dtype>::Init(const NetParameter& in_param) {
     available_blobs.insert(blob_name);
     memory_used += blob_pointer->count();
   }
-  DLOG(INFO) << "Memory required for Data" << memory_used*sizeof(Dtype);
+  DLOG(INFO) << ">>>>>> Memory required for Data" << memory_used*sizeof(Dtype);
   // For each layer, set up their input and output
   bottom_vecs_.resize(param.layers_size());
   top_vecs_.resize(param.layers_size());
@@ -75,6 +78,7 @@ void Net<Dtype>::Init(const NetParameter& in_param) {
     layer_names_.push_back(layer_param.name());
     LOG(INFO) << "Creating Layer " << layer_param.name();
     bool need_backward = param.force_backward();
+    //layer_param.size();
     // Figure out this layer's input and output
     for (int j = 0; j < layer_param.bottom_size(); ++j) {
       const string& blob_name = layer_param.bottom(j);
@@ -121,7 +125,10 @@ void Net<Dtype>::Init(const NetParameter& in_param) {
       }
     }
     // After this layer is connected, set it up.
-    // LOG(INFO) << "Setting up " << layer_names_[i];
+    LOG(INFO) << "Setting up " << layer_names_[i];
+    //LOG(INFO) << "bottom_vecs " << bottom_vecs_[i].size();
+    //LOG(INFO) << "top_vecs " << top_vecs_[i].size();
+	
     layers_[i]->SetUp(bottom_vecs_[i], &top_vecs_[i]);
     for (int topid = 0; topid < top_vecs_[i].size(); ++topid) {
       LOG(INFO) << "Top shape: " << top_vecs_[i][topid]->num() << " "
@@ -321,6 +328,7 @@ void Net<Dtype>::CopyTrainedLayersFrom(const NetParameter& param) {
       continue;
     }
     DLOG(INFO) << "Copying source layer " << source_layer_name;
+
     vector<shared_ptr<Blob<Dtype> > >& target_blobs =
         layers_[target_layer_id]->blobs();
     CHECK_EQ(target_blobs.size(), source_layer.blobs_size())

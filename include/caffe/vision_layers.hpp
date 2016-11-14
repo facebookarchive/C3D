@@ -270,6 +270,7 @@ class MemoryDataLayer : public Layer<Dtype> {
   int datum_channels() { return datum_channels_; }
   int datum_height() { return datum_height_; }
   int datum_width() { return datum_width_; }
+  int datum_length() { return datum_length_; }
   int batch_size() { return batch_size_; }
 
  protected:
@@ -285,6 +286,7 @@ class MemoryDataLayer : public Layer<Dtype> {
   int datum_channels_;
   int datum_height_;
   int datum_width_;
+  int datum_length_;
   int datum_size_;
   int batch_size_;
   int n_;
@@ -315,6 +317,7 @@ class PoolingLayer : public Layer<Dtype> {
   int channels_;
   int height_;
   int width_;
+  int length_;
   int pooled_height_;
   int pooled_width_;
   Blob<Dtype> rand_idx_;

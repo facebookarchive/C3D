@@ -7,7 +7,8 @@
 #include "caffe/common.hpp"
 #include "caffe/syncedmem.hpp"
 #include "caffe/util/math_functions.hpp"
-
+#include <iostream>
+using namespace std;
 namespace caffe {
 
 template <typename Dtype>
@@ -24,6 +25,13 @@ void Blob<Dtype>::Reshape(const int num, const int channels, const int length, c
   height_ = height;
   width_ = width;
   count_ = num_ * channels_ * length_ * height_ * width_;
+/*  cout << ">>>>>>>>>>>> Testing Count = "<< num_ << endl;
+  cout << ">>>>>>>>>>>> Testing Count = "<< channels_ << endl;
+  cout << ">>>>>>>>>>>> Testing Count = "<< length_ << endl;
+  cout << ">>>>>>>>>>>> Testing Count = "<< height_ << endl;
+  cout << ">>>>>>>>>>>> Testing Count = "<< width_ << endl;
+  cout << ">>>>>>>>>>>> Testing Count = "<< count_ << endl; */
+
   if (count_) {
     data_.reset(new SyncedMemory(count_ * sizeof(Dtype)));
     diff_.reset(new SyncedMemory(count_ * sizeof(Dtype)));
