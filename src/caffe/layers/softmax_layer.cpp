@@ -16,9 +16,9 @@ void SoftmaxLayer<Dtype>::SetUp(const vector<Blob<Dtype>*>& bottom,
       vector<Blob<Dtype>*>* top) {
   CHECK_EQ(bottom.size(), 1) << "Softmax Layer takes a single blob as input.";
   CHECK_EQ(top->size(), 1) << "Softmax Layer takes a single blob as output.";
-  (*top)[0]->Reshape(bottom[0]->num(), bottom[0]->channels(), 1,
+  (*top)[0]->Reshape(bottom[0]->num(), bottom[0]->channels(), bottom[0]->length(),
       bottom[0]->height(), bottom[0]->width());
-  sum_multiplier_.Reshape(1, bottom[0]->channels(), 1,
+  sum_multiplier_.Reshape(1, bottom[0]->channels(), bottom[0]->length(),
       bottom[0]->height(), bottom[0]->width());
   Dtype* multiplier_data = sum_multiplier_.mutable_cpu_data();
   for (int i = 0; i < sum_multiplier_.count(); ++i) {
