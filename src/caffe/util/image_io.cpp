@@ -103,7 +103,7 @@ bool ReadVideoToVolumeDatum(const char* filename, const int start_frm, const int
 	cv::VideoCapture cap;
 	cv::Mat img, img_origin;
 	char *buffer;
-	int offset, channel_size, image_size, data_size;
+	unsigned long int offset, channel_size, image_size, data_size;
 	int use_start_frm = start_frm;
 
 	cap.open(filename);
