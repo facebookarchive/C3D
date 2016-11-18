@@ -177,7 +177,7 @@ bool ReadImageSequenceToVolumeDatum(const char* img_dir, const int start_frm, co
 	char fn_im[256];
 	cv::Mat img, img_origin;
 	char *buffer;
-	int offset, channel_size, image_size, data_size;
+	unsigned long int offset, channel_size, image_size, data_size;
 
 	datum->set_channels(3);
 	datum->set_length(length);
