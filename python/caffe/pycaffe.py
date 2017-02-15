@@ -59,8 +59,8 @@ def _Net_forward(self, blobs=None, **kwargs):
         for in_, blob in kwargs.iteritems():
             if blob.shape[0] != self.blobs[in_].num:
                 raise Exception('Input is not batch sized')
-            if blob.ndim != 4:
-                raise Exception('{} blob is not 4-d'.format(in_))
+            if blob.ndim != 5:
+                raise Exception('{} blob is not 5-d'.format(in_))
             self.blobs[in_].data[...] = blob
 
     self._forward()
@@ -93,8 +93,8 @@ def _Net_backward(self, diffs=None, **kwargs):
         for top, diff in kwargs.iteritems():
             if diff.shape[0] != self.blobs[top].num:
                 raise Exception('Diff is not batch sized')
-            if diff.ndim != 4:
-                raise Exception('{} diff is not 4-d'.format(top))
+            if diff.ndim != 5:
+                raise Exception('{} diff is not 5-d'.format(top))
             self.blobs[top].diff[...] = diff
 
     self._backward()
@@ -176,7 +176,7 @@ def _Net_forward_backward_all(self, blobs=None, diffs=None, **kwargs):
     return all_outs, all_diffs
 
 
-def _Net_set_mean(self, input_, mean_f, mode='elementwise'):
+def _Net_set_mean(self, input_, mean_f):
     """
     Set the mean to subtract for data centering.
 
@@ -184,7 +184,6 @@ def _Net_set_mean(self, input_, mean_f, mode='elementwise'):
     input_: which input to assign this mean.
     mean_f: path to mean .npy with ndarray (input dimensional or broadcastable)
     mode: elementwise = use the whole mean (and check dimensions)
-          channel = channel constant (e.g. mean pixel instead of mean image)
     """
     if not hasattr(self, 'mean'):
         self.mean = {}
@@ -192,19 +191,17 @@ def _Net_set_mean(self, input_, mean_f, mode='elementwise'):
         raise Exception('Input not in {}'.format(self.inputs))
     in_shape = self.blobs[input_].data.shape
     mean = np.load(mean_f)
-    if mode == 'elementwise':
-        if mean.shape != in_shape[1:]:
-            # Resize mean (which requires H x W x K input in range [0,1]).
-            m_min, m_max = mean.min(), mean.max()
-            normal_mean = (mean - m_min) / (m_max - m_min)
-            mean = caffe.io.resize_image(normal_mean.transpose((1,2,0)),
-                    in_shape[2:]).transpose((2,0,1)) * (m_max - m_min) + m_min
-        self.mean[input_] = mean
-    elif mode == 'channel':
-        self.mean[input_] = mean.mean(1).mean(1).reshape((in_shape[1], 1, 1))
-    else:
-        raise Exception('Mode not in {}'.format(['elementwise', 'channel']))
-
+    if mean.ndim == 5:
+        mean = np.squeeze(mean, 0)
+    if mean.shape != in_shape[1:]:
+        # Resize mean (which requires H x W x K input in range [0,1]).
+        m_min, m_max = mean.min(), mean.max()
+        normal_mean = (mean - m_min) / (m_max - m_min)
+        ''' [info] normal_mean.shape=(16, 3, 128, 171),in_shape=(1, 3, 16, 112, 112) '''
+        mean = caffe.io.resize_image(
+                normal_mean.transpose((2,3,0,1)),
+                in_shape[3:]).transpose((2,3,0,1)) * (m_max - m_min) + m_min
+    self.mean[input_] = mean
 
 
 def _Net_set_input_scale(self, input_, scale):
@@ -247,27 +244,27 @@ def _Net_preprocess(self, input_name, input_):
     - scale feature
     - reorder channels (for instance color to BGR)
     - subtract mean
-    - transpose dimensions to K x H x W
+    - transpose dimensions to K x L X H x W (L: c3d_depth)
 
     Take
     input_name: name of input blob to preprocess for
-    input_: (H' x W' x K) ndarray
+    input_: (H' x W' x K X L) ndarray
 
     Give
-    caffe_inputs: (K x H x W) ndarray
+    caffe_inputs: (K x L X H x W) ndarray
     """
     caffe_in = input_.astype(np.float32)
     input_scale = self.input_scale.get(input_name)
     channel_order = self.channel_swap.get(input_name)
     mean = self.mean.get(input_name)
-    in_size = self.blobs[input_name].data.shape[2:]
+    in_size = self.blobs[input_name].data.shape[3:]
     if caffe_in.shape[:2] != in_size:
         caffe_in = caffe.io.resize_image(caffe_in, in_size)
     if input_scale:
         caffe_in *= input_scale
     if channel_order:
-        caffe_in = caffe_in[:, :, channel_order]
-    caffe_in = caffe_in.transpose((2, 0, 1))
+        caffe_in = caffe_in[:, :, channel_order, :]
+    caffe_in = caffe_in.transpose((2, 3, 0, 1))
     if mean is not None:
         caffe_in -= mean
     return caffe_in
@@ -283,11 +280,11 @@ def _Net_deprocess(self, input_name, input_):
     mean = self.mean.get(input_name)
     if mean is not None:
         decaf_in += mean
-    decaf_in = decaf_in.transpose((1,2,0))
+    decaf_in = decaf_in.transpose((2,3,0,1))
     if channel_order:
         channel_order_inverse = [channel_order.index(i)
                                  for i in range(decaf_in.shape[2])]
-        decaf_in = decaf_in[:, :, channel_order_inverse]
+        decaf_in = decaf_in[:, :, channel_order_inverse, :]
     if input_scale:
         decaf_in /= input_scale
     return decaf_in

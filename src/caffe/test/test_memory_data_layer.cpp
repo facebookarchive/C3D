@@ -19,6 +19,7 @@ class MemoryDataLayerTest : public ::testing::Test {
     batch_size_ = 8;
     batches_ = 12;
     channels_ = 4;
+    length_ = 5;
     height_ = 7;
     width_ = 11;
     blob_top_vec_.push_back(data_blob_);
@@ -26,8 +27,8 @@ class MemoryDataLayerTest : public ::testing::Test {
     // pick random input data
     FillerParameter filler_param;
     GaussianFiller<Dtype> filler(filler_param);
-    data_->Reshape(batches_ * batch_size_, channels_, height_, width_);
-    labels_->Reshape(batches_ * batch_size_, 1, 1, 1);
+    data_->Reshape(batches_ * batch_size_, channels_, length_, height_, width_);
+    labels_->Reshape(batches_ * batch_size_, 1, 1, 1, 1);
     filler.Fill(this->data_);
     filler.Fill(this->labels_);
   }
@@ -41,6 +42,7 @@ class MemoryDataLayerTest : public ::testing::Test {
   int batch_size_;
   int batches_;
   int channels_;
+  int length_;
   int height_;
   int width_;
   // we don't really need blobs for the input data, but it makes it
@@ -62,6 +64,7 @@ TYPED_TEST(MemoryDataLayerTest, TestSetup) {
   MemoryDataParameter* md_param = layer_param.mutable_memory_data_param();
   md_param->set_batch_size(this->batch_size_);
   md_param->set_channels(this->channels_);
+  md_param->set_length(this->length_);
   md_param->set_height(this->height_);
   md_param->set_width(this->width_);
   shared_ptr<Layer<TypeParam> > layer(
@@ -69,10 +72,12 @@ TYPED_TEST(MemoryDataLayerTest, TestSetup) {
   layer->SetUp(this->blob_bottom_vec_, &(this->blob_top_vec_));
   EXPECT_EQ(this->data_blob_->num(), this->batch_size_);
   EXPECT_EQ(this->data_blob_->channels(), this->channels_);
+  EXPECT_EQ(this->data_blob_->length(), this->length_);
   EXPECT_EQ(this->data_blob_->height(), this->height_);
   EXPECT_EQ(this->data_blob_->width(), this->width_);
   EXPECT_EQ(this->label_blob_->num(), this->batch_size_);
   EXPECT_EQ(this->label_blob_->channels(), 1);
+  EXPECT_EQ(this->label_blob_->length(), 1);
   EXPECT_EQ(this->label_blob_->height(), 1);
   EXPECT_EQ(this->label_blob_->width(), 1);
 }
@@ -83,6 +88,7 @@ TYPED_TEST(MemoryDataLayerTest, TestForward) {
   MemoryDataParameter* md_param = layer_param.mutable_memory_data_param();
   md_param->set_batch_size(this->batch_size_);
   md_param->set_channels(this->channels_);
+  md_param->set_length(this->length_);
   md_param->set_height(this->height_);
   md_param->set_width(this->width_);
   shared_ptr<MemoryDataLayer<TypeParam> > layer(
