@@ -31,6 +31,7 @@ def _Net_params(self):
     parameters indexed by name; each is a list of multiple blobs (e.g.,
     weights and biases)
     """
+    #print ">>>>>>>>>>>  _Net_params";
     return OrderedDict([(lr.name, lr.blobs) for lr in self.layers
                         if len(lr.blobs) > 0])
 
@@ -48,6 +49,7 @@ def _Net_forward(self, blobs=None, **kwargs):
     Give
     outs: {blob name: blob ndarray} dict.
     """
+    #print ">>>>>>>>>>>  _Net_forward";
     if blobs is None:
         blobs = []
 
@@ -59,10 +61,14 @@ def _Net_forward(self, blobs=None, **kwargs):
         for in_, blob in kwargs.iteritems():
             if blob.shape[0] != self.blobs[in_].num:
                 raise Exception('Input is not batch sized')
-            if blob.ndim != 4:
+            if blob.ndim != 5:
                 raise Exception('{} blob is not 4-d'.format(in_))
+            print "input blob.ndim = ", blob.ndim
+            print "nnz input blob = ", np.count_nonzero(np.array(blob))
             self.blobs[in_].data[...] = blob
-
+            #print "blobs shape = ", self.blobs[in_].data.shape
+    print "network blobs shape = ", self.blobs['data'].data.shape
+    print "network blobs nnz = ", np.count_nonzero(np.array(self.blobs['data'].data))
     self._forward()
 
     # Unpack blobs to extract
@@ -82,6 +88,7 @@ def _Net_backward(self, diffs=None, **kwargs):
     Give
     outs: {blob name: diff ndarray} dict.
     """
+    print ">>>>>>>>>>>  _Net_backward";
     if diffs is None:
         diffs = []
 
@@ -116,6 +123,7 @@ def _Net_forward_all(self, blobs=None, **kwargs):
     Give
     all_outs: {blob name: list of blobs} dict.
     """
+    #print ">>>>>>>>>>>  _Net_forward_all";
     # Collect outputs from batches
     all_outs = {out: [] for out in set(self.outputs + (blobs or []))}
     for batch in self._batch(kwargs):
@@ -148,6 +156,7 @@ def _Net_forward_backward_all(self, blobs=None, diffs=None, **kwargs):
     all_blobs: {blob name: blob ndarray} dict.
     all_diffs: {blob name: diff ndarray} dict.
     """
+    #print ">>>>>>>>>>>  _Net_forward_backward_all";
     # Batch blobs and diffs.
     all_outs = {out: [] for out in set(self.outputs + (blobs or []))}
     all_diffs = {diff: [] for diff in set(self.inputs + (diffs or []))}
@@ -186,6 +195,7 @@ def _Net_set_mean(self, input_, mean_f, mode='elementwise'):
     mode: elementwise = use the whole mean (and check dimensions)
           channel = channel constant (e.g. mean pixel instead of mean image)
     """
+    #print ">>>>>>>>>>>  _Net_set_mean";
     if not hasattr(self, 'mean'):
         self.mean = {}
     if input_ not in self.inputs:
@@ -215,6 +225,7 @@ def _Net_set_input_scale(self, input_, scale):
     input_: which input to assign this scale factor
     scale: scale coefficient
     """
+    #print ">>>>>>>>>>>  _Net_set_input_scale";
     if not hasattr(self, 'input_scale'):
         self.input_scale = {}
     if input_ not in self.inputs:
@@ -232,6 +243,7 @@ def _Net_set_channel_swap(self, input_, order):
     order: the order to take the channels.
            (2,1,0) maps RGB to BGR for example.
     """
+    #print ">>>>>>>>>>>  _Net_set_channel_swap";
     if not hasattr(self, 'channel_swap'):
         self.channel_swap = {}
     if input_ not in self.inputs:
@@ -256,6 +268,7 @@ def _Net_preprocess(self, input_name, input_):
     Give
     caffe_inputs: (K x H x W) ndarray
     """
+    #print ">>>>>>>>>>>  _Net_preprocess";
     caffe_in = input_.astype(np.float32)
     input_scale = self.input_scale.get(input_name)
     channel_order = self.channel_swap.get(input_name)
@@ -277,6 +290,7 @@ def _Net_deprocess(self, input_name, input_):
     """
     Invert Caffe formatting; see Net.preprocess().
     """
+    #print ">>>>>>>>>>>  _Net_deprocess";
     decaf_in = input_.copy().squeeze()
     input_scale = self.input_scale.get(input_name)
     channel_order = self.channel_swap.get(input_name)
@@ -298,6 +312,7 @@ def _Net_set_input_arrays(self, data, labels):
     Set input arrays of the in-memory MemoryDataLayer.
     (Note: this is only for networks declared with the memory data layer.)
     """
+    #print ">>>>>>>>>>>  _Net_set_input_arrays";
     if labels.ndim == 1:
         labels = np.ascontiguousarray(labels[:, np.newaxis, np.newaxis,
                                              np.newaxis])
@@ -315,6 +330,7 @@ def _Net_batch(self, blobs):
     Give (yield)
     batch: {blob name: list of blobs} dict for a single batch.
     """
+    #print ">>>>>>>>>>>  _Net_batch";
     num = len(blobs.itervalues().next())
     batch_size = self.blobs.itervalues().next().num
     remainder = num % batch_size
