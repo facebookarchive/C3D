@@ -101,7 +101,7 @@ void BufferToColorImage(const char* buffer, const int height, const int width, c
 bool ReadVideoToVolumeDatum(const char* filename, const int start_frm, const int label,
 		const int length, const int height, const int width, const int sampling_rate, VolumeDatum* datum){
 	cv::VideoCapture cap;
-	cv::Mat img, img_origin;
+	cv::Mat img;
 	char *buffer;
 	unsigned long int offset, channel_size, image_size, data_size;
 	int use_start_frm = start_frm;
@@ -134,21 +134,28 @@ bool ReadVideoToVolumeDatum(const char* filename, const int start_frm, const int
 	int end_frm = use_start_frm + length * sampling_rate;
 	CHECK_LE(end_frm, num_of_frames) << "end frame must less or equal to num of frames";
 
-	for (int i=use_start_frm; i<end_frm; i+=sampling_rate){
-		if (sampling_rate > 1)
-			cap.set(CV_CAP_PROP_POS_FRAMES, i);
-		if (height > 0 && width > 0){
-			cap.read(img_origin);
-			if (!img_origin.data){
-				LOG(INFO) << "No data at frame " << i;
-				return false;
-			}
-			cv::resize(img_origin, img, cv::Size(width, height));
+	for (int i=use_start_frm; i<end_frm; i+=1){
+		if ( !cap.grab() ){
+			LOG(INFO) << "Could not grab frame " << i << "of file " << filename;
+			cap.release();
+			return false;
 		}
-		else
-			cap.read(img);
+		if ( (i - use_start_frm) % sampling_rate != 0 ){
+			continue;
+		}
+		
+		if ( false == cap.retrieve(img) ){
+			LOG(INFO) << "No data at frame " << i << "of file " << filename;
+			cap.release();
+			return false;
+		}
+		if (height > 0 && width > 0){
+			cv::resize(img, img, cv::Size(width, height));
+		}
+		
 		if (!img.data){
 			LOG(ERROR) << "Could not open or find file " << filename;
+			cap.release();
 			return false;
 		}
 
