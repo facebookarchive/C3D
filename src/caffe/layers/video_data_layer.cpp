@@ -23,6 +23,7 @@
 #include <vector>
 #include <iostream>
 #include <fstream>
+#include <iomanip>
 #include <stdlib.h>
 #include <time.h>
 
@@ -42,6 +43,34 @@
 using std::string;
 
 namespace caffe {
+
+const string win_name = "Live video";
+const int waitKeyDelay = 10;
+cv::VideoCapture video_cap_;
+
+string GetStreamName(string path, int start_frm)
+{
+  string name, ext;
+  size_t sep = path.find_last_of("\\/");
+  if (sep != std::string::npos)
+      path = path.substr(sep + 1, path.size() - sep - 1);
+  size_t dot = path.find_last_of(".");
+  if (dot != std::string::npos)
+  {
+      name = path.substr(0, dot);
+      ext  = path.substr(dot, path.size() - dot);
+  }
+  else
+  {
+      name = path;
+      ext  = "";
+  }
+
+  std::ostringstream oss;
+  oss << std::setfill('0') << std::setw(6) << start_frm;
+
+  return name + '/' + oss.str();
+}
 
 template <typename Dtype>
 void* VideoDataLayerPrefetch(void* layer_pointer) {
@@ -64,6 +93,7 @@ void* VideoDataLayerPrefetch(void* layer_pointer) {
   const int new_height  = layer->layer_param_.image_data_param().new_height();
   const int new_width  = layer->layer_param_.image_data_param().new_width();
   const bool use_image = layer->layer_param_.image_data_param().use_image();
+  const bool use_stream = layer->layer_param_.image_data_param().use_stream();
   const int sampling_rate = layer->layer_param_.image_data_param().sampling_rate();
   const bool use_temporal_jitter = layer->layer_param_.image_data_param().use_temporal_jitter();
 
@@ -88,7 +118,57 @@ void* VideoDataLayerPrefetch(void* layer_pointer) {
     CHECK_GT(chunks_size, layer->lines_id_);
     bool read_status;
     int id = layer->shuffle_index_[layer->lines_id_];
-    if (!use_image){
+    if (use_stream){
+        if (!layer->file_list_[id].compare("CAMERA")){
+          int camera_index = layer->start_frm_list_[id];
+          if (!video_cap_.isOpened()){
+              video_cap_.open(camera_index);
+              if (!video_cap_.isOpened()){
+                LOG(ERROR) << "Cannot open CAM " << camera_index;
+                return static_cast<void*>(NULL);
+              }
+          }
+
+          vector<cv::Mat> live_imgs;
+          for (int i=0; i<new_length; i++){
+              cv::Mat img;
+              int sampling_count = 0;
+              while (sampling_count < sampling_rate){
+                  cv::waitKey(waitKeyDelay);
+                  video_cap_.read(img);
+                  if (!img.data){
+                      LOG(ERROR) << "No data at CAM " << camera_index;
+                      return static_cast<void*>(NULL);
+                  }
+                  imshow(win_name, img);
+                  sampling_count++;
+              }
+              live_imgs.push_back(img);
+              {
+                cv::Mat img_disp = img.clone();
+                copyMakeBorder( img_disp, img_disp, 2, 2, 2, 2, cv::BORDER_CONSTANT, cv::Scalar(0,255,0) );
+                imshow(win_name, img_disp);
+              }
+          }
+          int start_frm = layer->interval_jump_++ * layer->interval_list_[id];
+          layer->stream_names_.push_back(GetStreamName("CAMERA", start_frm));
+          read_status = ReadImageVectorToVolumeDatum(live_imgs,
+                          layer->label_list_[id], new_length, new_height, new_width, &datum);
+
+        } else {
+          int start_frm = layer->start_frm_list_[id] + layer->interval_jump_++ * layer->interval_list_[id];
+          int end_frm = start_frm + new_length * sampling_rate;
+          if (end_frm > layer->num_of_frames_list_[id]) {
+            LOG(INFO) << "Done extracting features from " << layer->file_list_[id];
+            read_status = false;
+          } else {
+            layer->stream_names_.push_back(GetStreamName(layer->file_list_[id].c_str(), start_frm));
+            read_status = ReadVideoToVolumeDatum(layer->file_list_[id].c_str(), start_frm,
+                        layer->label_list_[id], new_length, new_height, new_width, sampling_rate, &datum);
+          }
+        }
+    }
+    else if (!use_image){
     	if (!use_temporal_jitter){
     		read_status = ReadVideoToVolumeDatum(layer->file_list_[id].c_str(), layer->start_frm_list_[id],
     	    		layer->label_list_[id], new_length, new_height, new_width, sampling_rate, &datum);
@@ -119,13 +199,14 @@ void* VideoDataLayerPrefetch(void* layer_pointer) {
     	}
     }
 
-    if (layer->phase_ == Caffe::TEST){
+    if (layer->phase_ == Caffe::TEST && !use_stream){
     	CHECK(read_status) << "Testing must not miss any example";
     }
 
     if (!read_status) {
     	//LOG(ERROR) << "cannot read " << layer->file_list_[id];
         layer->lines_id_++;
+        layer->interval_jump_ = 0;
         if (layer->lines_id_ >= chunks_size) {
           // We have reached the end. Restart from the first.
           DLOG(INFO) << "Restarting data prefetching from start.";
@@ -236,7 +317,9 @@ void* VideoDataLayerPrefetch(void* layer_pointer) {
       // LOG(INFO) << "fetching label" << datum.label() << std::endl;
     }
 
-    layer->lines_id_++;
+    if (!use_stream) {
+      layer->lines_id_++;
+    }
     if (layer->lines_id_ >= chunks_size) {
       // We have reached the end. Restart from the first.
       DLOG(INFO) << "Restarting data prefetching from start.";
@@ -280,14 +363,31 @@ void VideoDataLayer<Dtype>::SetUp(const vector<Blob<Dtype>*>& bottom,
   const string& source = this->layer_param_.image_data_param().source();
   const bool use_temporal_jitter = this->layer_param_.image_data_param().use_temporal_jitter();
   const bool use_image = this->layer_param_.image_data_param().use_image();
+  const bool use_stream = this->layer_param_.image_data_param().use_stream();
   LOG(INFO) << "Opening file " << source;
   std::ifstream infile(source.c_str());
   int count = 0;
   string filename;
-  int start_frm, label;
+  int start_frm, num_of_frames, interval, label;
 
 
-  if ((!use_image) && use_temporal_jitter){
+  if (use_stream){
+    while (infile >> filename >> start_frm >> interval >> label) {
+        num_of_frames = -1;
+        if (filename.compare("CAMERA")){
+          cv::VideoCapture cap;
+          CHECK(cap.open(filename)) << "Cannot open " << filename;
+          num_of_frames = cap.get(CV_CAP_PROP_FRAME_COUNT);
+        }
+        file_list_.push_back(filename);
+        start_frm_list_.push_back(start_frm);
+        num_of_frames_list_.push_back(num_of_frames);
+        interval_list_.push_back(interval);
+        label_list_.push_back(label);
+        shuffle_index_.push_back(count);
+        count++;
+    }
+  } else if ((!use_image) && use_temporal_jitter){
 	  while (infile >> filename >> label) {
 		  file_list_.push_back(filename);
 		  label_list_.push_back(label);
@@ -317,6 +417,7 @@ void VideoDataLayer<Dtype>::SetUp(const vector<Blob<Dtype>*>& bottom,
   LOG(INFO) << "A total of " << shuffle_index_.size() << " video chunks.";
 
   lines_id_ = 0;
+  interval_jump_ = 0;
 
   // Check if we would need to randomly skip a few data points
   if (this->layer_param_.image_data_param().rand_skip()) {
@@ -330,8 +431,48 @@ void VideoDataLayer<Dtype>::SetUp(const vector<Blob<Dtype>*>& bottom,
   // Read a data point, and use it to initialize the top blob.
   VolumeDatum datum;
   int id = shuffle_index_[lines_id_];
-  if (!use_image){
-	  if (use_temporal_jitter){
+  if (use_stream){
+      if (!file_list_[id].compare("CAMERA")){
+        int camera_index = start_frm_list_[id];
+        if (!video_cap_.isOpened()){
+            video_cap_.open(camera_index);
+            if (!video_cap_.isOpened()){
+              LOG(ERROR) << "Cannot open CAM " << camera_index;
+              return;
+            }
+        }
+
+        cv::namedWindow(win_name, CV_WINDOW_AUTOSIZE);
+        vector<cv::Mat> live_imgs;
+        for (int i=0; i<new_length; i++){
+            cv::Mat img;
+            int sampling_count = 0;
+            while (sampling_count < sampling_rate){
+                cv::waitKey(waitKeyDelay);
+                video_cap_.read(img);
+                if (!img.data){
+                    LOG(ERROR) << "No data at CAM " << camera_index;
+                    return;
+                }
+                imshow(win_name, img);
+                sampling_count++;
+            }
+            live_imgs.push_back(img);
+            {
+              cv::Mat img_disp = img.clone();
+              copyMakeBorder( img_disp, img_disp, 2, 2, 2, 2, cv::BORDER_CONSTANT, cv::Scalar(0,255,0) );
+              imshow(win_name, img_disp);
+            }
+        }
+        CHECK(ReadImageVectorToVolumeDatum(live_imgs, label_list_[id],
+                                   new_length, new_height, new_width, &datum));
+      }
+      else
+          CHECK(ReadVideoToVolumeDatum(file_list_[id].c_str(), start_frm_list_[id], label_list_[id],
+                                   new_length, new_height, new_width, sampling_rate, &datum));
+  }
+  else if (!use_image){
+      if (use_temporal_jitter){
 		  srand (time(NULL));
 		  CHECK(ReadVideoToVolumeDatum(file_list_[0].c_str(), 0, label_list_[0],
 		                             new_length, new_height, new_width, sampling_rate, &datum));
@@ -407,7 +548,7 @@ void VideoDataLayer<Dtype>::SetUp(const vector<Blob<Dtype>*>& bottom,
   // Now, start the prefetch thread. Before calling prefetch, we make two
   // cpu_data calls so that the prefetch thread does not accidentally make
   // simultaneous cudaMalloc calls when the main thread is running. In some
-  // GPUs this seems to cause failures if we do not so.
+  // GPUs this seems to cause failures if we do not do so.
   prefetch_data_->mutable_cpu_data();
   if (output_labels_) {
     prefetch_label_->mutable_cpu_data();
@@ -463,6 +604,18 @@ Dtype VideoDataLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
   // Start a new prefetch thread
   CreatePrefetchThread();
   return Dtype(0.);
+}
+
+template <typename Dtype>
+vector<string> VideoDataLayer<Dtype>::pop_stream_names(int num) {
+  vector<string> popped_names;
+  for (int i=0; i<num; i++){
+    if (stream_names_.empty())
+      break;
+    popped_names.push_back(stream_names_.front());
+    stream_names_.pop_front();
+  }
+  return popped_names;
 }
 
 INSTANTIATE_CLASS(VideoDataLayer);

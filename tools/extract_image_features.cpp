@@ -26,6 +26,7 @@
 #include "caffe/common.hpp"
 #include "caffe/net.hpp"
 #include "caffe/vision_layers.hpp"
+#include "caffe/video_data_layer.hpp"
 #include "caffe/proto/caffe.pb.h"
 #include "caffe/util/io.hpp"
 #include "caffe/util/image_io.hpp"
@@ -54,18 +55,18 @@ int feature_extraction_pipeline(int argc, char** argv) {
   char* pretrained_model = argv[2];
   int device_id = atoi(argv[3]);
   uint batch_size = atoi(argv[4]);
-  uint num_mini_batches = atoi(argv[5]);
+  int num_mini_batches = atoi(argv[5]);
   char* fn_feat = argv[6];
 
   Caffe::set_phase(Caffe::TEST);
   if (device_id>=0){
-	  Caffe::set_mode(Caffe::GPU);
-	  Caffe::SetDevice(device_id);
-	  LOG(ERROR) << "Using GPU #" << device_id;
+    Caffe::set_mode(Caffe::GPU);
+    Caffe::SetDevice(device_id);
+    LOG(ERROR) << "Using GPU #" << device_id;
   }
   else{
-	  Caffe::set_mode(Caffe::CPU);
-	  LOG(ERROR) << "Using CPU";
+    Caffe::set_mode(Caffe::CPU);
+    LOG(ERROR) << "Using CPU";
   }
 
   shared_ptr<Net<Dtype> > feature_extraction_net(
@@ -76,6 +77,51 @@ int feature_extraction_pipeline(int argc, char** argv) {
   CHECK(feature_extraction_net->has_blob(string(argv[i])))
       << "Unknown feature blob name " << string(argv[i])
       << " in the network " << string(net_proto);
+  }
+
+  if (num_mini_batches < 0)
+  {
+    LOG(ERROR)<< "Extracting features until program is terminated";
+    std::ifstream infile(fn_feat);
+    string feat_prefix;
+    std::vector<string> list_prefix;
+    int c = 0;
+    infile >> feat_prefix;
+
+    vector<Blob<float>*> input_vec;
+    int image_index = 0;
+
+    boost::shared_ptr<caffe::Layer<float> > data_layer;
+    boost::shared_ptr< VideoDataLayer<Dtype> > video_data_layer;
+    data_layer = feature_extraction_net->layers()[0];
+    video_data_layer = boost::dynamic_pointer_cast< VideoDataLayer<Dtype> >(data_layer);
+    if (!video_data_layer) {
+      LOG(ERROR)<< "This mode may only be used if the first layer is a VideoDataLayer";
+    }
+
+    while (1) {
+      feature_extraction_net->Forward(input_vec);
+      list_prefix = video_data_layer->pop_stream_names(batch_size);
+
+      if (list_prefix.empty())
+        break;
+      for (int k=7; k<argc; k++){
+        const shared_ptr<Blob<Dtype> > feature_blob = feature_extraction_net
+          ->blob_by_name(string(argv[k]));
+        int num_features = feature_blob->num();
+
+        Dtype* feature_blob_data;
+        for (int n = 0; n < num_features; ++n) {
+          if (list_prefix.size()>n){
+            string fn_feat = feat_prefix + list_prefix[n] + string(".") + string(argv[k]);
+            save_blob_to_binary(feature_blob.get(), fn_feat, n);
+          }
+        }
+      }
+      image_index += list_prefix.size();
+    }
+    LOG(ERROR)<< "Successfully extracted " << image_index << " features!";
+    return 0;
   }
 
   LOG(ERROR)<< "Extracting features for " << num_mini_batches << " batches";
@@ -91,26 +137,26 @@ int feature_extraction_pipeline(int argc, char** argv) {
     feature_extraction_net->Forward(input_vec);
     list_prefix.clear();
     for (int n=0; n<batch_size; n++){
-    	if (infile >> feat_prefix)
-    		list_prefix.push_back(feat_prefix);
-    	else
-    		break;
+      if (infile >> feat_prefix)
+        list_prefix.push_back(feat_prefix);
+      else
+        break;
     }
 
     if (list_prefix.empty())
-    	break;
+      break;
     for (int k=7; k<argc; k++){
-    	const shared_ptr<Blob<Dtype> > feature_blob = feature_extraction_net
+      const shared_ptr<Blob<Dtype> > feature_blob = feature_extraction_net
         ->blob_by_name(string(argv[k]));
-    	int num_features = feature_blob->num();
+      int num_features = feature_blob->num();
 
-    	Dtype* feature_blob_data;
-        for (int n = 0; n < num_features; ++n) {
-          if (list_prefix.size()>n){
-        	  string fn_feat = list_prefix[n] + string(".") + string(argv[k]);
-        	  save_blob_to_binary(feature_blob.get(), fn_feat, n);
-          }
+      Dtype* feature_blob_data;
+      for (int n = 0; n < num_features; ++n) {
+        if (list_prefix.size()>n){
+          string fn_feat = list_prefix[n] + string(".") + string(argv[k]);
+          save_blob_to_binary(feature_blob.get(), fn_feat, n);
         }
+      }
     }
     image_index += list_prefix.size();
     if (batch_index % 100 == 0) {

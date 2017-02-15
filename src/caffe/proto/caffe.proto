@@ -324,6 +324,7 @@ message ImageDataParameter {
   optional uint32 new_length = 11 [default = 0];
   optional int32 show_data = 12 [default = 0];
   optional bool use_image = 13 [default = false];
+  optional bool use_stream = 113 [default = false];
   optional int32 sampling_rate = 14 [default = 1];
   optional bool use_label = 15 [default = true];
   optional bool use_temporal_jitter = 16 [default = false];
