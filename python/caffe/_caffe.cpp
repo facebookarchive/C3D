@@ -57,6 +57,7 @@ class CaffeBlob {
   int channels() const { return blob_->channels(); }
   int height() const { return blob_->height(); }
   int width() const { return blob_->width(); }
+  int length() const { return blob_->length(); } // for 5D shape
   int count() const { return blob_->count(); }
 
   // this is here only to satisfy boost's vector_indexing_suite
@@ -79,9 +80,9 @@ class CaffeBlobWrap : public CaffeBlob {
       : CaffeBlob(blob), self_(p) {}
 
   object get_data() {
-      npy_intp dims[] = {num(), channels(), height(), width()};
+      npy_intp dims[] = {num(), channels(), height(), width(), length()};
 
-      PyObject *obj = PyArray_SimpleNewFromData(4, dims, NPY_FLOAT32,
+      PyObject *obj = PyArray_SimpleNewFromData(5, dims, NPY_FLOAT32,
                                                 blob_->mutable_cpu_data());
       PyArray_SetBaseObject(reinterpret_cast<PyArrayObject *>(obj), self_);
       Py_INCREF(self_);
@@ -91,9 +92,9 @@ class CaffeBlobWrap : public CaffeBlob {
   }
 
   object get_diff() {
-      npy_intp dims[] = {num(), channels(), height(), width()};
+      npy_intp dims[] = {num(), channels(), height(), width(), length()};
 
-      PyObject *obj = PyArray_SimpleNewFromData(4, dims, NPY_FLOAT32,
+      PyObject *obj = PyArray_SimpleNewFromData(5, dims, NPY_FLOAT32,
                                                 blob_->mutable_cpu_diff());
       PyArray_SetBaseObject(reinterpret_cast<PyArrayObject *>(obj), self_);
       Py_INCREF(self_);
@@ -178,6 +179,9 @@ struct CaffeNet {
     }
     if (PyArray_DIMS(arr)[3] != width) {
       throw std::runtime_error(name + " has wrong width");
+    }
+    if (PyArray_DIMS(arr)[4] != length) {
+      throw std::runtime_error(name + " has wrong length");
     }
   }
 
@@ -332,6 +336,7 @@ BOOST_PYTHON_MODULE(_caffe) {
       .add_property("channels", &CaffeBlob::channels)
       .add_property("height",   &CaffeBlob::height)
       .add_property("width",    &CaffeBlob::width)
+      .add_property("length",   &CaffeBlob::length)
       .add_property("count",    &CaffeBlob::count)
       .add_property("data",     &CaffeBlobWrap::get_data)
       .add_property("diff",     &CaffeBlobWrap::get_diff);
