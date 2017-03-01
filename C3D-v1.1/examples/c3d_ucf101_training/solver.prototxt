@@ -1,0 +1,20 @@
+net: "train_simple.prototxt"
+#test_iter: 100
+#test_state: { stage: 'test-on-train' }
+#test_iter: 100
+#test_state: { stage: 'test-on-val' }
+#test_interval: 1000
+base_lr: 0.01
+momentum: 0.9
+weight_decay: 0.00005
+lr_policy: "step"
+gamma: 0.1
+stepsize: 20000
+# Display every 20 iterations
+display: 20
+# The maximum number of iterations
+max_iter: 1000
+# snapshot intermediate results
+snapshot: 1000
+snapshot_prefix: "c3d_ucf101"
+solver_mode: GPU
