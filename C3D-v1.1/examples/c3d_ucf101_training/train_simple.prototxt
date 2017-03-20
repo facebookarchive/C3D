@@ -16,7 +16,7 @@ layer {
   }
   video_data_param {
     source: "train_01.lst"
-    root_folder: "/data/scratch/dutran/ucf101/frm/"
+    root_folder: "/data/users/trandu/datasets/ucf101/frm/"
     new_length: 16
     new_height: 128
     new_width: 171
@@ -44,7 +44,7 @@ layer {
   }
   video_data_param {
     source: "train_01.lst"
-    root_folder: "/data/scratch/dutran/ucf101/frm/"
+    root_folder: "/data/users/trandu/datasets/ucf101/frm/"
     new_length: 16
     new_height: 128
     new_width: 171
@@ -72,7 +72,7 @@ layer {
   }
   video_data_param {
     source: "test_01.lst"
-    root_folder: "/data/scratch/dutran/ucf101/frm/"
+    root_folder: "/data/users/trandu/datasets/ucf101/frm/"
     new_length: 16
     new_height: 128
     new_width: 171
