@@ -163,8 +163,6 @@ void Deconvolution3DLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom
   Dtype* col_data = col_buffer_.mutable_cpu_data();
   const Dtype* weight = this->blobs_[0]->cpu_data();
 
-  int weight_offset = M_ * K_;
-  int top_offset = M_ * N_;
   static const int zero_array[] = {0, 0, 0, 0, 0};
   vector<int> offset_indices(zero_array, zero_array + 5);
 
@@ -202,7 +200,6 @@ void Deconvolution3DLayer<Dtype>::Backward_cpu(const vector<Blob<Dtype>*>& top,
   Dtype* weight_diff = this->blobs_[0]->mutable_cpu_diff();
   const Dtype* bottom_data = bottom[0]->cpu_data();
   Dtype* bottom_diff = bottom[0]->mutable_cpu_diff();
-  Dtype* col_data = col_buffer_.mutable_cpu_data();
   Dtype* col_diff = col_buffer_.mutable_cpu_diff();
   // bias gradient if necessary
   Dtype* bias_diff = NULL;

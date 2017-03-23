@@ -135,7 +135,10 @@ bool ReadVideoToVolumeDatumHelper(const char* filename, const int start_frm,
   cv::VideoCapture cap;
   cv::Mat img, img_origin;
   char *buffer = NULL;
-  int offset, channel_size, image_size, data_size;
+  int offset = 0;
+  int channel_size = 0;
+  int image_size = 0;
+  int data_size = 0;
   int use_start_frm = start_frm;
 
   cap.open(filename);
@@ -219,8 +222,11 @@ bool ReadVideoToVolumeDatumHelperSafe(const char* filename, const int start_frm,
   const int sampling_rate, VolumeDatum* datum){
   cv::VideoCapture cap;
 	cv::Mat img, img_origin;
-  char *buffer = NULL;
-	int offset, channel_size, image_size, data_size;
+  	char *buffer = NULL;
+	int offset = 0;
+	int channel_size = 0;
+	int image_size = 0;
+	int data_size = 0;
 	int use_start_frm = start_frm;
 
 	cap.open(filename);
@@ -311,8 +317,11 @@ bool ReadImageSequenceToVolumeDatum(const char* img_dir, const int start_frm, co
 		const int length, const int height, const int width, const int sampling_rate, VolumeDatum* datum){
 	char fn_im[256];
 	cv::Mat img, img_origin;
-	char *buffer;
-	int offset, channel_size, image_size, data_size;
+	char *buffer = NULL;
+	int offset = 0;
+	int channel_size = 0;
+	int image_size = 0;
+	int data_size = 0;
 
 	datum->set_channels(3);
 	datum->set_length(length);
