@@ -86,13 +86,12 @@ void Deconvolution3DLayer<Dtype>::LayerSetUp(const vector<Blob<Dtype>*>& bottom,
   N0_ = length_out_ * height_out_ * width_out_;
 
   // output size
-  top_shape[0] = bottom[0]->num();
+  top_shape[0] = bottom[0]->shape(0);
   top_shape[1] = num_output_;
   top_shape[2] = length_out_;
   top_shape[3] = height_out_;
   top_shape[4] = width_out_;
   top[0]->Reshape(top_shape);
-  //(*top)[0]->Reshape(bottom[0]->num(), num_output_, length_out_, height_out_, width_out_);
 
 
   // Check if we need to set up the weights
