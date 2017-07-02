@@ -61,7 +61,7 @@ int get_weights(int argc, char** argv) {
             blob_data.FromProto(source_layer.blobs(j));
             string fn_weight = string(output_dir) + string("/") + 
                 source_layer_name + string("_") + SSTR( j );
-            save_blob_to_binary<Dtype>(&blob_data, fn_weight, 0); // filename, offset = 0
+            save_blob_to_binary<Dtype>(&blob_data, fn_weight, -1); // filename, num_index < 0 to use blob_data.num()
         }
     }
     return 0;
