@@ -63,27 +63,42 @@ int extraction_all_learned_filters(int argc, char** argv) {
       continue;
     }
     for (int j=0; j<blobs.size(); j++) {
+      char buffer[16];
+      sprintf(buffer, "%d", j);
+
       FILE *f;
+
+      // write the shape file
       int header[5];
+      long int c;
       header[0] = blobs[j]->shape(0);
       header[1] = blobs[j]->num_axes() > 1 ? blobs[j]->shape(1) : 1;
       header[2] = blobs[j]->num_axes() > 2 ? blobs[j]->shape(2) : 1;
       header[3] = blobs[j]->num_axes() > 3 ? blobs[j]->shape(3) : 1;
       header[4] = blobs[j]->num_axes() > 4 ? blobs[j]->shape(4) : 1;
-
-      char buffer[16];
-      sprintf(buffer, "%d", j);
-
+      c = header[0] * header[1] * header[2] * header[3] * header[4];
       f = fopen(
         (output_dir +
          layer_names[i] +
          string("_") +
          string(buffer) +
-         string(".bin")
+         string(".shape")
         ).c_str(), "wb");
       fwrite(header, 5, sizeof(int), f);
+      fclose(f);
+
+      CHECK_EQ(blobs[j]->count(), c) << "Wrong size";
+      // write the value file
+      f = fopen(
+        (output_dir +
+         layer_names[i] +
+         string("_") +
+         string(buffer) +
+         string(".value")
+        ).c_str(), "wb");
       fwrite(blobs[j]->mutable_cpu_data(), blobs[j]->count(), sizeof(Dtype), f);
       fclose(f);
+
     }
   }
 
