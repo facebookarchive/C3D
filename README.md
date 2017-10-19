@@ -9,6 +9,6 @@ For more information about c3d, please refer to the [C3D project website](http:/
 
 For general questions about Caffe, please refer to the [BVLC project website](http://caffe.berkeleyvision.org) for all documentation.
 
-## Third-party Implementations
+## Third-party Implementation:
 
-- [tensorflow Implementation](https://github.com/hx173149/C3D-tensorflow) **with trained models** by [hx](https://github.com/hx173149) and [XL](https://github.com/cc786537662)
+- [C3D-tensorflow](https://github.com/hx173149/C3D-tensorflow) **with trained models** by [hx](https://github.com/hx173149) and [XL](https://github.com/cc786537662)
