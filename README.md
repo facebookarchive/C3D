@@ -8,3 +8,7 @@ The main supporting features include:<br/>
 For more information about c3d, please refer to the [C3D project website](http://vlg.cs.dartmouth.edu/c3d).<br/>
 
 For general questions about Caffe, please refer to the [BVLC project website](http://caffe.berkeleyvision.org) for all documentation.
+
+## Third-party Implementation:
+
+- [C3D-tensorflow](https://github.com/hx173149/C3D-tensorflow) **with trained models** by [hx](https://github.com/hx173149) and [XL](https://github.com/cc786537662)
