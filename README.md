@@ -17,7 +17,3 @@ If you are about to start or just started your project, we would like to recomme
 
 ## License
 C3D is licensed under the Creative Commons Attribution-NonCommercial 3.0, as found in the LICENSE file.
-
-## Third-party Implementation:
-
-- [C3D-tensorflow](https://github.com/hx173149/C3D-tensorflow) **with trained models** by [hx](https://github.com/hx173149) and [XL](https://github.com/cc786537662)
