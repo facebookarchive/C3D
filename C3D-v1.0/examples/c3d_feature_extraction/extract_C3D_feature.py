@@ -57,8 +57,16 @@ def get_frame_count(video):
         sys.exit(-6)
 
     # get frame counts
-    num_frames = int(cap.get(cv2.cv.CV_CAP_PROP_FRAME_COUNT))
-    fps = cap.get(cv2.cv.CV_CAP_PROP_FPS)
+    if cv2.__version__ >= '3.0.0':
+        CAP_PROP_FRAME_COUNT = cv2.CAP_PROP_FRAME_COUNT
+    else:
+        CAP_PROP_FRAME_COUNT = cv2.cv.CV_CAP_PROP_FRAME_COUNT
+    num_frames = int(cap.get(CAP_PROP_FRAME_COUNT))
+    if cv2.__version__ >= '3.0.0':
+        CAP_PROP_FPS = cv2.CAP_PROP_FPS
+    else:
+        CAP_PROP_FPS = cv2.cv.CV_CAP_PROP_FPS
+    fps = cap.get(CAP_PROP_FPS)
 
     # in case, fps was not available, use default of 29.97
     if not fps or fps != fps:
@@ -82,7 +90,11 @@ def extract_frames(video, start_frame, frame_dir, num_frames_to_extract=16):
         sys.exit(-6)
 
     # move to start_frame
-    cap.set(cv2.cv.CV_CAP_PROP_POS_FRAMES, start_frame)
+    if cv2.__version__ >= '3.0.0':
+        CAP_PROP_POS_FRAMES = cv2.CAP_PROP_POS_FRAMES
+    else:
+        CAP_PROP_POS_FRAMES = cv2.cv.CV_CAP_PROP_POS_FRAMES
+    cap.set(CAP_PROP_POS_FRAMES, start_frame)
 
     # grab each frame and save
     for frame_count in range(num_frames_to_extract):
